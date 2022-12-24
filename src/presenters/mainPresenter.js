@@ -1,25 +1,31 @@
 import {render} from '../render.js';
 import AddNewEventView from '../views/addNewEventView.js';
+import ContentView from '../views/contentView.js';
 import EventView from '../views/eventView.js';
-import FiltersView from '../views/filtersView.js';
+import HeaderView from '../views/headerView.js';
 import PointsView from '../views/pointsView.js';
 import SortView from '../views/sortView.js';
 
 export default class MainPresenter {
-  filtersView = new FiltersView();
+  headerView = new HeaderView();
+  contentView = new ContentView();
   sortView = new SortView();
   pointsView = new PointsView();
   newEventView = new AddNewEventView();
 
-  constructor({filtersContainer, mainContainer}) {
-    this.filtersContainer = filtersContainer;
-    this.mainContainer = mainContainer;
+  constructor({bodyContainer}) {
+    this.bodyContainer = bodyContainer;
   }
 
   init() {
-    render(this.filtersView, this.filtersContainer);
-    render(this.sortView, this.mainContainer);
-    render(this.pointsView, this.mainContainer);
+    render(this.headerView, this.bodyContainer);
+    render(this.contentView, this.bodyContainer);
+
+    const contentElement = this.contentView.getElement();
+    const contentContainer = contentElement.querySelector('.trip-events');
+
+    render(this.sortView, contentContainer);
+    render(this.pointsView, contentContainer);
     render(this.newEventView, this.pointsView.getElement());
 
     for(let i = 0; i < 3; i++) {
