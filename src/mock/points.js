@@ -27,6 +27,7 @@ const createIdGenerator = (min, max) => {
   };
 };
 
+const offerIdGenerator = createIdGenerator(1, 100);
 const destinationIdGenerator = createIdGenerator(1, 100);
 const pointsIdGenerator = createIdGenerator(1, 100);
 
@@ -44,18 +45,30 @@ const createDestination = () => (
   }
 );
 
+const createOffer = () => ({
+  'id': offerIdGenerator(),
+  'title': 'Upgrade to a business class',
+  'price': getRandomInteger(100, 200)
+});
+
+const offers = Array.from({length: 10}, createOffer);
+const destinations = Array.from({length: 10}, createDestination);
+
 const createPoint = () => (
   {
     'base_price': getRandomInteger(0, 2000),
     'date_from': new Date(getRandomInteger(2010, 2022), getRandomInteger(1, 12), getRandomInteger(1,28)),
     'date_to': new Date(getRandomInteger(2010, 2022), getRandomInteger(1, 12), getRandomInteger(1,28)),
-    'destination': getRandomInteger(1, 100),
-    'id': `${getRandomInteger(1, 100)}`,
-    'offers': getRandomInteger(1, 100),
+    'destination': getRandomArrayElement(destinations).id,
+    'id': pointsIdGenerator(),
+    'offers': getRandomArrayElement(offers).id,
     'type': getRandomArrayElement(TYPES)
   }
 );
 
+const points = Array.from({length: 15}, createPoint);
 
-const getRandomPoints = (count) => Array.from({length: count}, createPoint);
+export const getPoints = () => points;
+export const getOffers = () => offers;
+export const getDestinations = () => destinations;
 
