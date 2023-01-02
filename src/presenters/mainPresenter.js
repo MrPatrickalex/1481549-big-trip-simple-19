@@ -13,11 +13,16 @@ export default class MainPresenter {
   pointsView = new PointsView();
   newEventView = new AddNewEventView();
 
-  constructor({bodyContainer}) {
+  constructor({bodyContainer, pointsModel}) {
     this.bodyContainer = bodyContainer;
+    this.pointsModel = pointsModel;
   }
 
   init() {
+    const points = this.pointsModel.getPoints();
+    const offers = this.pointsModel.getOffers();
+    const destinations = this.pointsModel.getDestinations();
+
     render(this.headerView, this.bodyContainer);
     render(this.contentView, this.bodyContainer);
 
@@ -26,10 +31,12 @@ export default class MainPresenter {
 
     render(this.sortView, contentContainer);
     render(this.pointsView, contentContainer);
-    render(this.newEventView, this.pointsView.getElement());
+    render(new AddNewEventView(destinations, offers), this.pointsView.getElement());
 
-    for(let i = 0; i < 3; i++) {
-      render(new EventView(), this.pointsView.getElement());
-    }
+    points.forEach((p) => {
+      const pointOffers = offers.filter((o) => p.offers.some((o2) => o2 === o.id));
+      const [pointDestination] = destinations.filter(d => d.id === p.destination);
+      render(new EventView(p, pointOffers, pointDestination), this.pointsView.getElement());
+    });
   }
 }

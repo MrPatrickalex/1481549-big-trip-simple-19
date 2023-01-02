@@ -40,6 +40,22 @@ const createDestination = () => (
       {
         'src': `https://loremflickr.com/248/152?${getRandomInteger(1, 100)}`,
         'description': 'Chamonix parliament building'
+      },
+      {
+        'src': `https://loremflickr.com/248/152?${getRandomInteger(1, 100)}`,
+        'description': 'Chamonix parliament building'
+      },
+      {
+        'src': `https://loremflickr.com/248/152?${getRandomInteger(1, 100)}`,
+        'description': 'Chamonix parliament building'
+      },
+      {
+        'src': `https://loremflickr.com/248/152?${getRandomInteger(1, 100)}`,
+        'description': 'Chamonix parliament building'
+      },
+      {
+        'src': `https://loremflickr.com/248/152?${getRandomInteger(1, 100)}`,
+        'description': 'Chamonix parliament building'
       }
     ]
   }
@@ -57,11 +73,21 @@ const destinations = Array.from({length: 10}, createDestination);
 const createPoint = () => (
   {
     'base_price': getRandomInteger(0, 2000),
-    'date_from': new Date(getRandomInteger(2010, 2022), getRandomInteger(1, 12), getRandomInteger(1,28)),
-    'date_to': new Date(getRandomInteger(2010, 2022), getRandomInteger(1, 12), getRandomInteger(1,28)),
+    'date_from': new Date(
+      getRandomInteger(2010, 2022),
+      getRandomInteger(1, 12),
+      getRandomInteger(1,28),
+      getRandomInteger(1, 12),
+      getRandomInteger(0, 59)),
+    'date_to': new Date(
+      getRandomInteger(2010, 2022),
+      getRandomInteger(1, 12),
+      getRandomInteger(1,28),
+      getRandomInteger(1, 12),
+      getRandomInteger(0, 59)),
     'destination': getRandomArrayElement(destinations).id,
     'id': pointsIdGenerator(),
-    'offers': getRandomArrayElement(offers).id,
+    'offers': [getRandomArrayElement(offers).id],
     'type': getRandomArrayElement(TYPES)
   }
 );

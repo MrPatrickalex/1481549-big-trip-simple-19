@@ -39,6 +39,9 @@ const checkStringLength = (str, maxLength) => {
   return str.length <= maxLength;
 };
 
+const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+const removeWhiteSpaces = (str) => str.replaceAll(/\s/g,'');
+
 const isEscapeKey = (event) => event.key === 'Escape';
 const isTabKey = (event) => event.key === 'Tab';
 
@@ -104,6 +107,8 @@ export {
   getRandomArrayElement,
   getRandomInteger,
   checkStringLength,
+  capitalizeFirstLetter,
+  removeWhiteSpaces,
   isEscapeKey,
   isTabKey,
   trapFocus,
