@@ -1,6 +1,6 @@
 import MainPresenter from './presenters/mainPresenter.js';
+import PointsModel from './model/model.js';
 
-const filtersContainer = document.querySelector('.trip-controls__filters');
-const mainContainer = document.querySelector('.trip-events');
-
-new MainPresenter({filtersContainer, mainContainer}).init();
+const bodyContainer = document.querySelector('.page-body');
+const pointsModel = new PointsModel();
+new MainPresenter({bodyContainer, pointsModel}).init();
