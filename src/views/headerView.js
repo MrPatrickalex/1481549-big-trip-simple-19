@@ -46,7 +46,7 @@ const createHeaderTemplate = () =>
 export default class HeaderView {
   #element = null;
 
-  get #lement() {
+  get element() {
     if(!this.#element) {
       this.#element = createElement(this.template);
     }

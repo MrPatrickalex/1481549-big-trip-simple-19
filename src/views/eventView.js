@@ -53,13 +53,13 @@ const createTemplate = (point, offers, destination) => {
 export default class EventView {
   #element = null;
   #point = null;
-  #offers = null;
-  #destination = null;
+  #pointOffers = null;
+  #pointDestination = null;
 
-  constructor(point, offers, destination) {
+  constructor({point, pointOffers, pointDestination}) {
     this.#point = point;
-    this.#offers = offers;
-    this.#destination = destination;
+    this.#pointOffers = pointOffers;
+    this.#pointDestination = pointDestination;
   }
 
   get element() {
@@ -71,7 +71,7 @@ export default class EventView {
   }
 
   get template() {
-    return createTemplate(this.#point, this.#offers, this.#destination);
+    return createTemplate(this.#point, this.#pointOffers, this.#pointDestination);
   }
 
   removeElement() {
