@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import { createElement } from '../render.js';
 import { capitalizeFirstLetter, removeWhiteSpaces } from '../utils.js';
 
 const EVENT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
@@ -108,26 +108,28 @@ const createTemplate = (destinations, offers) => `
 `;
 
 export default class AddNewEventView {
-  element = null;
+  #element = null;
+  #destinations = null;
+  #offers = null;
 
   constructor(destinations, offers) {
-    this.destinations = destinations;
-    this.offers = offers;
+    this.#destinations = destinations;
+    this.#offers = offers;
   }
 
-  getElement() {
-    if(!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if(!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
+  }
+
+  get template() {
+    return createTemplate(this.#destinations, this.#offers);
   }
 
   removeElement() {
-    this.element = null;
-  }
-
-  getTemplate() {
-    return createTemplate(this.destinations, this.offers);
+    this.#element = null;
   }
 }

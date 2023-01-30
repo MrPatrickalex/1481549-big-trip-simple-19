@@ -44,21 +44,21 @@ const createHeaderTemplate = () =>
   `;
 
 export default class HeaderView {
-  element = null;
+  #element = null;
 
-  getElement() {
-    if(!this.element) {
-      this.element = createElement(this.getTemplate());
+  get #lement() {
+    if(!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
+  }
+
+  get template() {
+    return createHeaderTemplate();
   }
 
   removeElement() {
-    this.element = null;
-  }
-
-  getTemplate() {
-    return createHeaderTemplate();
+    this.#element = null;
   }
 }

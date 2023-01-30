@@ -1,6 +1,6 @@
 import { getPoints, getOffers, getDestinations} from '../mock/points.js';
 
-export default class Model {
+export default class PointsModel {
   getPoints() {
     return getPoints();
   }

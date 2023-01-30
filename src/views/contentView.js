@@ -15,21 +15,21 @@ const createContentTemplate = () => `
 `;
 
 export default class ContentView {
-  element = null;
+  #element = null;
 
-  getElement() {
-    if(!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if(!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
+  }
+
+  get template() {
+    return createContentTemplate();
   }
 
   removeElement() {
-    this.element = null;
-  }
-
-  getTemplate() {
-    return createContentTemplate();
+    this.#element = null;
   }
 }
