@@ -6,12 +6,14 @@ import EventView from '../views/eventView.js';
 import HeaderView from '../views/headerView.js';
 import PointsView from '../views/pointsView.js';
 import SortView from '../views/sortView.js';
+import EmptyListView from '../views/emptyListBoilerplate.js';
 
 export default class MainPresenter {
   #headerView = new HeaderView();
   #contentView = new ContentView();
   #sortView = new SortView();
   #pointsView = new PointsView();
+  #emptyView = new EmptyListView();
 
   #bodyContainer = null;
   #pointsModel = null;
@@ -44,7 +46,11 @@ export default class MainPresenter {
       allOffers: this.#offers,
       allDestinations: this.#destinations}), this.#pointsView.element);
 
-    this.#points.forEach((p) => this.createPoint(p));
+    if(this.#points.length > 0) {
+      this.#points.forEach((p) => this.createPoint(p));
+    } else {
+      render(this.#emptyView, contentContainer);
+    }
   }
 
   createPoint(point) {
