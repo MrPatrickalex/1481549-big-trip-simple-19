@@ -81,7 +81,7 @@ const createOfferSectionTemplate = (pointOffers, allOffers) => `
   </section>
 `;
 
-const createDestinationImages = ({description, name, pictures}) => `
+const createDestinationImages = ({description, pictures}) => `
   <section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">${description}</p>

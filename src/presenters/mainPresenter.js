@@ -1,5 +1,5 @@
 import {render} from '../render.js';
-import {isEscapeKey} from "../utils";
+import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';
 import EventView from '../views/eventView.js';
@@ -49,7 +49,7 @@ export default class MainPresenter {
 
   createPoint(point) {
     const pointOffers = this.#offers.filter((o) => point.offers.some((o2) => o2 === o.id));
-    const [pointDestination] = this.#destinations.filter(d => d.id === point.destination);
+    const [pointDestination] = this.#destinations.filter((d) => d.id === point.destination);
 
     const pointView = new EventView({point, pointOffers, pointDestination});
     const pointEdit = new EditEventView({
@@ -62,7 +62,7 @@ export default class MainPresenter {
     render(pointView, this.#pointsView.element);
 
     const showEditMode = () => {
-      this.#pointsView.element.replaceChild(pointEdit.element, pointView.element)
+      this.#pointsView.element.replaceChild(pointEdit.element, pointView.element);
       document.addEventListener('keydown', escapeHander);
     };
     const closeEditMode = () => {
