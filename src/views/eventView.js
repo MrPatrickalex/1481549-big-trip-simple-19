@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import { capitalizeFirstLetter } from '../utils.js';
 import dayjs from 'dayjs';
 
@@ -50,31 +50,19 @@ const createTemplate = (point, offers, destination) => {
   `;
 };
 
-export default class EventView {
-  #element = null;
+export default class EventView extends AbstractView {
   #point = null;
   #pointOffers = null;
   #pointDestination = null;
 
   constructor({point, pointOffers, pointDestination}) {
+    super();
     this.#point = point;
     this.#pointOffers = pointOffers;
     this.#pointDestination = pointDestination;
   }
 
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
   get template() {
     return createTemplate(this.#point, this.#pointOffers, this.#pointDestination);
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

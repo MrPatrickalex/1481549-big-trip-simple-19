@@ -1,4 +1,4 @@
-import {render} from '../render.js';
+import {render} from '../framework/render.js';
 import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';

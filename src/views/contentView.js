@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createContentTemplate = () => `
   <main class="page-body__page-main  page-main">
@@ -14,22 +14,8 @@ const createContentTemplate = () => `
   </main>
 `;
 
-export default class ContentView {
-  #element = null;
-
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
+export default class ContentView extends AbstractView {
   get template() {
     return createContentTemplate();
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

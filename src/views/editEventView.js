@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
 import { capitalizeFirstLetter, removeWhiteSpaces } from '../utils.js';
 import dayjs from 'dayjs';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 
@@ -110,8 +110,7 @@ const createTemplate = (point, pointOffers, pointDestination, allDestinations, a
     </form>
 `;
 
-export default class EditEventView {
-  #element = null;
+export default class EditEventView extends AbstractView {
   #point = null;
   #pointOffers = null;
   #pointDestination = null;
@@ -119,19 +118,12 @@ export default class EditEventView {
   #allDestinations = null;
 
   constructor({point, pointOffers, pointDestination, allOffers, allDestinations}) {
+    super();
     this.#point = point;
     this.#pointOffers = pointOffers;
     this.#pointDestination = pointDestination;
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
-  }
-
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
   }
 
   get template() {
@@ -141,9 +133,5 @@ export default class EditEventView {
       this.#pointDestination,
       this.#allDestinations,
       this.#allOffers);
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }
