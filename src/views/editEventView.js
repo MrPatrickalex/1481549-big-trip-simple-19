@@ -116,14 +116,24 @@ export default class EditEventView extends AbstractView {
   #pointDestination = null;
   #allOffers = null;
   #allDestinations = null;
+  #handleClose = null;
+  #handleSubmit = null;
 
-  constructor({point, pointOffers, pointDestination, allOffers, allDestinations}) {
+  constructor({point, pointOffers, pointDestination, allOffers, allDestinations, onCloseClick, onSubmitClick}) {
     super();
     this.#point = point;
     this.#pointOffers = pointOffers;
     this.#pointDestination = pointDestination;
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
+    this.#handleClose = onCloseClick;
+    this.#handleSubmit = onSubmitClick;
+
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this.#closeClickHandler);
+
+    this.element.querySelector('.event__save-btn')
+      .addEventListener('click', this.#submitClickHandler);
   }
 
   get template() {
@@ -134,4 +144,14 @@ export default class EditEventView extends AbstractView {
       this.#allDestinations,
       this.#allOffers);
   }
+
+  #closeClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleClose();
+  };
+
+  #submitClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleSubmit();
+  };
 }
