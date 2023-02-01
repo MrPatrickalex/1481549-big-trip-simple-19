@@ -1,4 +1,4 @@
-import { getPoints, getOffers, getDestinations} from '../mock/points.js';
+import { getPoints, getOffers, getDestinations, getSortings } from '../mock/points.js';
 
 export default class PointsModel {
   getPoints() {
@@ -11,5 +11,9 @@ export default class PointsModel {
 
   getDestinations() {
     return getDestinations();
+  }
+
+  getSortingsFilters() {
+    return getSortings();
   }
 }

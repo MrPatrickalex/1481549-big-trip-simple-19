@@ -7,11 +7,12 @@ import HeaderView from '../views/headerView.js';
 import PointsView from '../views/pointsView.js';
 import SortView from '../views/sortView.js';
 import EmptyListView from '../views/emptyListBoilerplate.js';
+import dayjs from 'dayjs';
 
 export default class MainPresenter {
-  #headerView = new HeaderView();
+  #headerView = null;
   #contentView = new ContentView();
-  #sortView = new SortView();
+  #sortView = null;
   #pointsView = new PointsView();
   #emptyView = new EmptyListView();
 
@@ -21,6 +22,9 @@ export default class MainPresenter {
   #points = null;
   #offers = null;
   #destinations = null;
+  #sortings = null;
+
+  #isNewEventOpened = false;
 
   constructor({bodyContainer, pointsModel}) {
     this.#bodyContainer = bodyContainer;
@@ -28,23 +32,57 @@ export default class MainPresenter {
     this.#points = this.#pointsModel.getPoints();
     this.#offers = this.#pointsModel.getOffers();
     this.#destinations = this.#pointsModel.getDestinations();
+    this.#sortings = this.#pointsModel.getSortingsFilters();
   }
 
   init() {
+    this.#headerView = new HeaderView({
+      onAllClick: () => {
+        this.#points = this.#pointsModel
+          .getPoints();
+        this.renderPoints();
+      },
+      onFutureClick: () => {
+        this.#points = this.#pointsModel
+          .getPoints()
+          .filter((p) => dayjs().isBefore(p.date_from));
+        this.renderPoints();
+      }
+    });
+
     render(this.#headerView, this.#bodyContainer);
     render(this.#contentView, this.#bodyContainer);
 
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
+    this.#sortView = new SortView({
+      sortings: this.#sortings,
+      onSortCLick: (sortingFunction) => {
+        this.#points.sort(sortingFunction);
+        this.renderPoints();
+      }
+    });
     render(this.#sortView, contentContainer);
     render(this.#pointsView, contentContainer);
-    render(new EditEventView({
-      point: null,
-      pointOffers: null,
-      pointDestination: null,
-      allOffers: this.#offers,
-      allDestinations: this.#destinations}), this.#pointsView.element);
+
+    this.renderPoints();
+  }
+
+  renderPoints() {
+    const contentElement = this.#contentView.element;
+    const contentContainer = contentElement.querySelector('.trip-events');
+
+    this.#pointsView.element.innerHTML = '';
+
+    if(this.#isNewEventOpened) {
+      render(new EditEventView({
+        point: null,
+        pointOffers: null,
+        pointDestination: null,
+        allOffers: this.#offers,
+        allDestinations: this.#destinations}), this.#pointsView.element);
+    }
 
     if(this.#points.length > 0) {
       this.#points.forEach((p) => this.createPoint(p));

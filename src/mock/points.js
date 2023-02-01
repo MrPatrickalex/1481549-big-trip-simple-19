@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
 
 const TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
@@ -11,6 +12,68 @@ const DESCRIPTIONS = [
   'Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.',
   'Sed sed nisi sed augue convallis suscipit in sed felis.',
   'Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.'
+];
+
+const SORTINGS = [
+  {
+    classList: 'trip-sort__item--day',
+    value: 'sort-day',
+    id: 'sort-day',
+    label: 'Day',
+    disabled: false,
+    sort: (p1, p2) => {
+      if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+  },
+  {
+    classList: 'trip-sort__item--event',
+    value: 'sort-event',
+    id: 'sort-event',
+    label: 'Event',
+    disabled: true
+  },
+  {
+    classList: 'trip-sort__item--time',
+    value: 'sort-time',
+    id: 'sort-time',
+    label: 'Time',
+    disabled: false,
+    sort: (p1, p2) => {
+      const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
+      const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
+
+      if(timeFirst < timeSecond) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+  },
+  {
+    classList: 'trip-sort__item--price',
+    value: 'sort-price',
+    id: 'sort-price',
+    label: 'Price',
+    disabled: false,
+    sort: (p1, p2) => {
+      if(p1.base_price < p2.base_price) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+  },
+  {
+    classList: 'trip-sort__item--offer',
+    value: 'sort-offer',
+    id: 'sort-offer',
+    label: 'Offers',
+    disabled: false
+  },
 ];
 
 const createIdGenerator = (min, max) => {
@@ -74,13 +137,13 @@ const createPoint = () => (
   {
     'base_price': getRandomInteger(0, 2000),
     'date_from': new Date(
-      getRandomInteger(2010, 2022),
+      getRandomInteger(2021, 2026),
       getRandomInteger(1, 12),
       getRandomInteger(1,28),
       getRandomInteger(1, 12),
       getRandomInteger(0, 59)),
     'date_to': new Date(
-      getRandomInteger(2010, 2022),
+      getRandomInteger(2021, 2026),
       getRandomInteger(1, 12),
       getRandomInteger(1,28),
       getRandomInteger(1, 12),
@@ -97,4 +160,5 @@ const points = Array.from({length: 15}, createPoint);
 export const getPoints = () => points;
 export const getOffers = () => offers;
 export const getDestinations = () => destinations;
+export const getSortings = () => SORTINGS;
 

@@ -44,7 +44,31 @@ const createHeaderTemplate = () =>
   `;
 
 export default class HeaderView extends AbstractView {
+  #handleAllClick = null;
+  #handleFutureClick = null;
+
+  constructor({onAllClick, onFutureClick}) {
+    super();
+    this.#handleAllClick = onAllClick;
+    this.#handleFutureClick = onFutureClick;
+
+    this.element.querySelector('#filter-everything')
+      .addEventListener('click', this.#allClickHandler);
+    this.element.querySelector('#filter-future')
+      .addEventListener('click', this.#futureClickHandler);
+  }
+
   get template() {
     return createHeaderTemplate();
   }
+
+  #allClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleAllClick();
+  };
+
+  #futureClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleFutureClick();
+  };
 }
