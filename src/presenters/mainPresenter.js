@@ -1,4 +1,4 @@
-import {render} from '../render.js';
+import {render} from '../framework/render.js';
 import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';
@@ -57,48 +57,46 @@ export default class MainPresenter {
     const pointOffers = this.#offers.filter((o) => point.offers.some((o2) => o2 === o.id));
     const [pointDestination] = this.#destinations.filter((d) => d.id === point.destination);
 
-    const pointView = new EventView({point, pointOffers, pointDestination});
+    const pointView = new EventView({
+      point,
+      pointOffers,
+      pointDestination,
+      onEditClick: () => showEditMode.call(this)
+    });
     const pointEdit = new EditEventView({
       point,
       pointOffers,
       pointDestination,
       allOffers: this.#offers,
-      allDestinations: this.#destinations});
+      allDestinations: this.#destinations,
+      onCloseClick: () => closeEditMode.call(this),
+      onSubmitClick: () => closeEditMode.call(this)
+    });
 
     render(pointView, this.#pointsView.element);
 
-    const showEditMode = () => {
-      this.#pointsView.element.replaceChild(pointEdit.element, pointView.element);
-      document.addEventListener('keydown', escapeHander);
-    };
-    const closeEditMode = () => {
-      this.#pointsView.element.replaceChild(pointView.element, pointEdit.element);
-      document.removeEventListener('keydown', escapeHander);
+    const escapeHander = (event) => {
+      if(isEscapeKey(event)) {
+        closeEditMode.call(this);
+      }
     };
 
-    function escapeHander(event) {
-      if(isEscapeKey(event)) {
-        closeEditMode();
-      }
+    function changeViewToForm() {
+      this.#pointsView.element.replaceChild(pointEdit.element, pointView.element);
     }
 
-    const openEventButton = pointView.element.querySelector('.event__rollup-btn');
-    const submitEventButton = pointEdit.element.querySelector('.event__save-btn');
-    const cancelEventButton = pointEdit.element.querySelector('.event__reset-btn');
+    function changeFormToView() {
+      this.#pointsView.element.replaceChild(pointView.element, pointEdit.element);
+    }
 
-    openEventButton.addEventListener('click', () => {
-      showEditMode();
-    });
+    function showEditMode() {
+      changeViewToForm.call(this);
+      document.addEventListener('keydown', escapeHander);
+    }
 
-    submitEventButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      closeEditMode();
-    });
-
-    cancelEventButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      closeEditMode();
+    function closeEditMode() {
+      changeFormToView.call(this);
       document.removeEventListener('keydown', escapeHander);
-    });
+    }
   }
 }

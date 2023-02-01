@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
 import { capitalizeFirstLetter, removeWhiteSpaces } from '../utils.js';
 import dayjs from 'dayjs';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 
@@ -110,28 +110,30 @@ const createTemplate = (point, pointOffers, pointDestination, allDestinations, a
     </form>
 `;
 
-export default class EditEventView {
-  #element = null;
+export default class EditEventView extends AbstractView {
   #point = null;
   #pointOffers = null;
   #pointDestination = null;
   #allOffers = null;
   #allDestinations = null;
+  #handleClose = null;
+  #handleSubmit = null;
 
-  constructor({point, pointOffers, pointDestination, allOffers, allDestinations}) {
+  constructor({point, pointOffers, pointDestination, allOffers, allDestinations, onCloseClick, onSubmitClick}) {
+    super();
     this.#point = point;
     this.#pointOffers = pointOffers;
     this.#pointDestination = pointDestination;
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
-  }
+    this.#handleClose = onCloseClick;
+    this.#handleSubmit = onSubmitClick;
 
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this.#closeClickHandler);
 
-    return this.#element;
+    this.element.querySelector('.event__save-btn')
+      .addEventListener('click', this.#submitClickHandler);
   }
 
   get template() {
@@ -143,7 +145,13 @@ export default class EditEventView {
       this.#allOffers);
   }
 
-  removeElement() {
-    this.#element = null;
-  }
+  #closeClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleClose();
+  };
+
+  #submitClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleSubmit();
+  };
 }
