@@ -121,6 +121,7 @@ export default class EditEventView extends AbstractView {
 
   constructor({point, pointOffers, pointDestination, allOffers, allDestinations, onCloseClick, onSubmitClick}) {
     super();
+
     this.#point = point;
     this.#pointOffers = pointOffers;
     this.#pointDestination = pointDestination;

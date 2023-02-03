@@ -1,13 +1,12 @@
 import {render} from '../framework/render.js';
-import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';
-import EventView from '../views/eventView.js';
 import HeaderView from '../views/headerView.js';
 import PointsView from '../views/pointsView.js';
 import SortView from '../views/sortView.js';
 import EmptyListView from '../views/emptyListBoilerplate.js';
 import dayjs from 'dayjs';
+import PointPresenter from './pointPresenter.js';
 
 export default class MainPresenter {
   #headerView = null;
@@ -25,6 +24,7 @@ export default class MainPresenter {
   #sortings = null;
 
   #isNewEventOpened = false;
+  #pointPresentersMap = new Map();
 
   constructor({bodyContainer, pointsModel}) {
     this.#bodyContainer = bodyContainer;
@@ -36,23 +36,36 @@ export default class MainPresenter {
   }
 
   init() {
+    this.#renderHeader();
+    this.#renderContentContainer();
+    this.#renderSort();
+    this.#renderPointsContainer();
+    this.#renderPoints();
+  }
+
+  #renderHeader() {
     this.#headerView = new HeaderView({
       onAllClick: () => {
         this.#points = this.#pointsModel
           .getPoints();
-        this.renderPoints();
+        this.#renderPoints();
       },
       onFutureClick: () => {
         this.#points = this.#pointsModel
           .getPoints()
           .filter((p) => dayjs().isBefore(p.date_from));
-        this.renderPoints();
+        this.#renderPoints();
       }
     });
 
     render(this.#headerView, this.#bodyContainer);
-    render(this.#contentView, this.#bodyContainer);
+  }
 
+  #renderContentContainer() {
+    render(this.#contentView, this.#bodyContainer);
+  }
+
+  #renderSort() {
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
@@ -60,20 +73,23 @@ export default class MainPresenter {
       sortings: this.#sortings,
       onSortCLick: (sortingFunction) => {
         this.#points.sort(sortingFunction);
-        this.renderPoints();
+        this.#renderPoints();
       }
     });
     render(this.#sortView, contentContainer);
-    render(this.#pointsView, contentContainer);
-
-    this.renderPoints();
   }
 
-  renderPoints() {
+  #renderPointsContainer() {
+    const contentElement = this.#contentView.element;
+    const contentContainer = contentElement.querySelector('.trip-events');
+    render(this.#pointsView, contentContainer);
+  }
+
+  #renderPoints() {
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
-    this.#pointsView.element.innerHTML = '';
+    this.#clearPointList();
 
     if(this.#isNewEventOpened) {
       render(new EditEventView({
@@ -92,49 +108,19 @@ export default class MainPresenter {
   }
 
   createPoint(point) {
-    const pointOffers = this.#offers.filter((o) => point.offers.some((o2) => o2 === o.id));
-    const [pointDestination] = this.#destinations.filter((d) => d.id === point.destination);
-
-    const pointView = new EventView({
+    const pointPresenter = new PointPresenter({
       point,
-      pointOffers,
-      pointDestination,
-      onEditClick: () => showEditMode.call(this)
-    });
-    const pointEdit = new EditEventView({
-      point,
-      pointOffers,
-      pointDestination,
-      allOffers: this.#offers,
-      allDestinations: this.#destinations,
-      onCloseClick: () => closeEditMode.call(this),
-      onSubmitClick: () => closeEditMode.call(this)
+      offers: this.#offers,
+      destinations: this.#destinations,
+      pointsView: this.#pointsView
     });
 
-    render(pointView, this.#pointsView.element);
+    this.#pointPresentersMap.set(point.id, pointPresenter);
+    pointPresenter.renderPoint();
+  }
 
-    const escapeHander = (event) => {
-      if(isEscapeKey(event)) {
-        closeEditMode.call(this);
-      }
-    };
-
-    function changeViewToForm() {
-      this.#pointsView.element.replaceChild(pointEdit.element, pointView.element);
-    }
-
-    function changeFormToView() {
-      this.#pointsView.element.replaceChild(pointView.element, pointEdit.element);
-    }
-
-    function showEditMode() {
-      changeViewToForm.call(this);
-      document.addEventListener('keydown', escapeHander);
-    }
-
-    function closeEditMode() {
-      changeFormToView.call(this);
-      document.removeEventListener('keydown', escapeHander);
-    }
+  #clearPointList() {
+    this.#pointPresentersMap.forEach((presenter) => presenter.destroy());
+    this.#pointPresentersMap.clear();
   }
 }
