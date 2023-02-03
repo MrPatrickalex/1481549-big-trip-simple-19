@@ -3,8 +3,9 @@ import dayjs from 'dayjs';
 import AbstractView from '../framework/view/abstract-view.js';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
-
 const EVENT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+
+const createCheckboxId = (id, title) => `event-offer-${removeWhiteSpaces(title)}${id}-1`
 
 const createEventTypeElementTemplate = (type) => `
       <div class="event__type-item">
@@ -63,8 +64,8 @@ const createEventPriceTemplate = (point) => `
 
 const createOfferTemplate = ({id, title, price, checked}) => `
   <div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${removeWhiteSpaces(title)}${id}-1" type="checkbox" name="event-offer-luggage" ${checked ? 'checked' : ''}>
-    <label class="event__offer-label" for="event-offer-${removeWhiteSpaces(title)}${id}-1">
+    <input class="event__offer-checkbox visually-hidden" data-id=${id} id=${createCheckboxId(id, title)} type="checkbox" name="event-offer-luggage" ${checked ? 'checked' : ''}>
+    <label class="event__offer-label" for=${createCheckboxId(id, title)}>
     <span class="event__offer-title">${title}</span>
     &plus;&euro;&nbsp;
     <span class="event__offer-price">${price}</span>
@@ -118,8 +119,9 @@ export default class EditEventView extends AbstractView {
   #allDestinations = null;
   #handleClose = null;
   #handleSubmit = null;
+  #handleOfferChange = null;
 
-  constructor({point, pointOffers, pointDestination, allOffers, allDestinations, onCloseClick, onSubmitClick}) {
+  constructor({point, pointOffers, pointDestination, allOffers, allDestinations, onCloseClick, onSubmitClick, onOfferChange}) {
     super();
 
     this.#point = point;
@@ -129,12 +131,16 @@ export default class EditEventView extends AbstractView {
     this.#allDestinations = allDestinations;
     this.#handleClose = onCloseClick;
     this.#handleSubmit = onSubmitClick;
+    this.#handleOfferChange = onOfferChange;
 
     this.element.querySelector('.event__reset-btn')
       .addEventListener('click', this.#closeClickHandler);
 
     this.element.querySelector('.event__save-btn')
       .addEventListener('click', this.#submitClickHandler);
+
+    this.element.querySelectorAll('.event__offer-checkbox')
+      .forEach((checkbox) => checkbox.addEventListener('click', this.#offerClickHandler));
   }
 
   get template() {
@@ -154,5 +160,12 @@ export default class EditEventView extends AbstractView {
   #submitClickHandler = (event) => {
     event.preventDefault();
     this.#handleSubmit();
+  };
+
+  #offerClickHandler = (event) => {
+    event.preventDefault();
+    const checkbox = event.target;
+    const offerId = +checkbox.dataset.id;
+    this.#handleOfferChange(offerId);
   };
 }

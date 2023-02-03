@@ -12,11 +12,14 @@ export default class PointPresenter {
   #pointComponent = null;
   #pointEditComponent = null;
 
-  constructor({point, offers, destinations, pointsView}) {
+  #onDataChange = null;
+
+  constructor({point, offers, destinations, pointsView, onDataChange}) {
     this.#point = point;
     this.#offers = offers;
     this.#destinations = destinations;
     this.#pointsView = pointsView;
+    this.#onDataChange = onDataChange;
   }
 
   get point() {
@@ -47,7 +50,8 @@ export default class PointPresenter {
       allOffers: this.#offers,
       allDestinations: this.#destinations,
       onCloseClick: () => this.#closeEditMode.call(this),
-      onSubmitClick: () => this.#closeEditMode.call(this)
+      onSubmitClick: () => this.#closeEditMode.call(this),
+      onOfferChange: (offerId) => this.#handleOfferChange(offerId)
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -57,11 +61,11 @@ export default class PointPresenter {
 
     // Проверка на наличие в DOM необходима,
     // чтобы не пытаться заменить то, что не было отрисовано
-    if (this.#pointsView.contains(prevPointComponent.element)) {
+    if (this.#pointsView.element.contains(prevPointComponent.element)) {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#pointsView.contains(prevPointEditComponent.element)) {
+    if (this.#pointsView.element.contains(prevPointEditComponent.element)) {
       replace(this.#pointEditComponent, prevPointEditComponent);
     }
 
@@ -97,4 +101,12 @@ export default class PointPresenter {
     this.#changeFormToView.call(this);
     document.removeEventListener('keydown', this.#escapeHander);
   }
+
+  #handleOfferChange = (offerId) => {
+    const newOffers = this.#point.offers.includes(offerId)
+      ? [...this.#point.offers.filter((o) => o.id !== offerId)]
+      : [...this.#point.offers, offerId];
+
+    this.#onDataChange({...this.#point, offers: newOffers});
+  };
 }

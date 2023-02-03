@@ -112,7 +112,8 @@ export default class MainPresenter {
       point,
       offers: this.#offers,
       destinations: this.#destinations,
-      pointsView: this.#pointsView
+      pointsView: this.#pointsView,
+      onDataChange: (e) => this.#handlePointChange(e)
     });
 
     this.#pointPresentersMap.set(point.id, pointPresenter);
@@ -122,5 +123,16 @@ export default class MainPresenter {
   #clearPointList() {
     this.#pointPresentersMap.forEach((presenter) => presenter.destroy());
     this.#pointPresentersMap.clear();
+  }
+
+  #handlePointChange(updatedPoint) {
+    this.#points = this.#points.map(
+      (point) => point.id === updatedPoint.id ? updatedPoint : point);
+
+    const presenter = this.#pointPresentersMap.get(updatedPoint.id);
+    presenter.point = updatedPoint;
+
+    console.log(updatedPoint);
+    presenter.renderPoint();
   }
 }
