@@ -113,7 +113,8 @@ export default class MainPresenter {
       offers: this.#offers,
       destinations: this.#destinations,
       pointsView: this.#pointsView,
-      onDataChange: (e) => this.#handlePointChange(e)
+      onDataChange: (e) => this.#handlePointChange(e),
+      onModeChange: () => this.#handleModeChange()
     });
 
     this.#pointPresentersMap.set(point.id, pointPresenter);
@@ -132,7 +133,11 @@ export default class MainPresenter {
     const presenter = this.#pointPresentersMap.get(updatedPoint.id);
     presenter.point = updatedPoint;
 
-    console.log(updatedPoint);
+    // console.log(updatedPoint);
     presenter.renderPoint();
   }
+
+  #handleModeChange = () => {
+    this.#pointPresentersMap.forEach((presenter) => presenter.resetView());
+  };
 }

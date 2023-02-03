@@ -3,6 +3,11 @@ import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import EventView from '../views/eventView.js';
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
 export default class PointPresenter {
   #pointsView = null;
   #point = null;
@@ -14,12 +19,16 @@ export default class PointPresenter {
 
   #onDataChange = null;
 
-  constructor({point, offers, destinations, pointsView, onDataChange}) {
+  #mode = Mode.DEFAULT;
+  #onModeChange = null;
+
+  constructor({point, offers, destinations, pointsView, onDataChange, onModeChange}) {
     this.#point = point;
     this.#offers = offers;
     this.#destinations = destinations;
     this.#pointsView = pointsView;
     this.#onDataChange = onDataChange;
+    this.#onModeChange = onModeChange;
   }
 
   get point() {
@@ -59,13 +68,11 @@ export default class PointPresenter {
       return;
     }
 
-    // Проверка на наличие в DOM необходима,
-    // чтобы не пытаться заменить то, что не было отрисовано
-    if (this.#pointsView.element.contains(prevPointComponent.element)) {
+    if (this.#mode === Mode.DEFAULT) {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#pointsView.element.contains(prevPointEditComponent.element)) {
+    if (this.#mode === Mode.EDITING) {
       replace(this.#pointEditComponent, prevPointEditComponent);
     }
 
@@ -86,20 +93,35 @@ export default class PointPresenter {
 
   #changeViewToForm() {
     replace(this.#pointEditComponent, this.#pointComponent);
+    this.#onModeChange();
+    this.#mode = Mode.EDITING;
   }
 
   #changeFormToView() {
     replace(this.#pointComponent, this.#pointEditComponent);
+    this.#mode = Mode.DEFAULT;
   }
 
   #showEditMode() {
+    if(this.#mode === Mode.EDITING) {
+      return;
+    }
     this.#changeViewToForm.call(this);
     document.addEventListener('keydown', this.#escapeHander);
   }
 
   #closeEditMode() {
+    if(this.#mode === Mode.DEFAULT) {
+      return;
+    }
     this.#changeFormToView.call(this);
     document.removeEventListener('keydown', this.#escapeHander);
+  }
+
+  resetView() {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#changeFormToView();
+    }
   }
 
   #handleOfferChange = (offerId) => {
