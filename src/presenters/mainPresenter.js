@@ -7,6 +7,7 @@ import SortView from '../views/sortView.js';
 import EmptyListView from '../views/emptyListBoilerplate.js';
 import dayjs from 'dayjs';
 import PointPresenter from './pointPresenter.js';
+import { SortType } from '../const.js';
 
 export default class MainPresenter {
   #headerView = null;
@@ -25,6 +26,8 @@ export default class MainPresenter {
 
   #isNewEventOpened = false;
   #pointPresentersMap = new Map();
+
+  #currentSortType = SortType.DEFAULT;
 
   constructor({bodyContainer, pointsModel}) {
     this.#bodyContainer = bodyContainer;
@@ -71,12 +74,55 @@ export default class MainPresenter {
 
     this.#sortView = new SortView({
       sortings: this.#sortings,
-      onSortCLick: (sortingFunction) => {
-        this.#points.sort(sortingFunction);
+      onSortCLick: (sortType) => {
+        if(this.#currentSortType === sortType) {
+          return;
+        }
+        this.#sortTasks(sortType);
         this.#renderPoints();
       }
     });
     render(this.#sortView, contentContainer);
+  }
+
+  #sortTasks(sortType) {
+    switch(sortType) {
+      case SortType.DAY:
+        this.#points.sort((p1, p2) => {
+          if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
+            return -1;
+          } else {
+            return 1;
+          }
+        });
+        break;
+      case SortType.EVENT:
+        break;
+      case SortType.TIME:
+        this.#points.sort((p1, p2) => {
+          const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
+          const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
+
+          if(timeFirst < timeSecond) {
+            return -1;
+          } else {
+            return 1;
+          }
+        });
+        break;
+      case SortType.PRICE:
+        this.#points.sort((p1, p2) => {
+          if(p1.base_price < p2.base_price) {
+            return -1;
+          } else {
+            return 1;
+          }
+        });
+        break;
+      case SortType.OFFER:
+        break;
+    }
+    this.#currentSortType = sortType;
   }
 
   #renderPointsContainer() {

@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
+import { SortType } from '../const.js';
 
 const TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];
@@ -21,20 +21,15 @@ const SORTINGS = [
     id: 'sort-day',
     label: 'Day',
     disabled: false,
-    sort: (p1, p2) => {
-      if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }
+    sortType: SortType.DAY,
   },
   {
     classList: 'trip-sort__item--event',
     value: 'sort-event',
     id: 'sort-event',
     label: 'Event',
-    disabled: true
+    disabled: true,
+    sortType: SortType.EVENT,
   },
   {
     classList: 'trip-sort__item--time',
@@ -42,16 +37,7 @@ const SORTINGS = [
     id: 'sort-time',
     label: 'Time',
     disabled: false,
-    sort: (p1, p2) => {
-      const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
-      const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
-
-      if(timeFirst < timeSecond) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }
+    sortType: SortType.TIME,
   },
   {
     classList: 'trip-sort__item--price',
@@ -59,20 +45,15 @@ const SORTINGS = [
     id: 'sort-price',
     label: 'Price',
     disabled: false,
-    sort: (p1, p2) => {
-      if(p1.base_price < p2.base_price) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }
+    sortType: SortType.PRICE,
   },
   {
     classList: 'trip-sort__item--offer',
     value: 'sort-offer',
     id: 'sort-offer',
     label: 'Offers',
-    disabled: false
+    disabled: false,
+    sortType: SortType.OFFER,
   },
 ];
 
