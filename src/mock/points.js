@@ -1,7 +1,6 @@
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
-import { SortType } from '../const.js';
+import { SortType, TYPES } from '../const.js';
 
-const TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];
 const DESCRIPTIONS = [
   'Lorem ipsum dolor sit amet',

@@ -7,12 +7,12 @@ import SortView from '../views/sortView.js';
 import EmptyListView from '../views/emptyListBoilerplate.js';
 import dayjs from 'dayjs';
 import PointPresenter from './pointPresenter.js';
-import { SortType } from '../const.js';
+import { BLANK_POINT, SortType } from '../const.js';
 
 export default class MainPresenter {
   #headerView = null;
-  #contentView = new ContentView();
   #sortView = null;
+  #contentView = new ContentView();
   #pointsView = new PointsView();
   #emptyView = new EmptyListView();
 
@@ -24,7 +24,7 @@ export default class MainPresenter {
   #destinations = null;
   #sortings = null;
 
-  #isNewEventOpened = false;
+  #isNewEventOpened = true;
   #pointPresentersMap = new Map();
 
   #currentSortType = SortType.DEFAULT;
@@ -139,9 +139,9 @@ export default class MainPresenter {
 
     if(this.#isNewEventOpened) {
       render(new EditEventView({
-        point: null,
-        pointOffers: null,
-        pointDestination: null,
+        point: BLANK_POINT,
+        pointOffers: BLANK_POINT.offers,
+        pointDestination: BLANK_POINT.destination,
         allOffers: this.#offers,
         allDestinations: this.#destinations}), this.#pointsView.element);
     }
