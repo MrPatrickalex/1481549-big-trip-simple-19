@@ -1,5 +1,5 @@
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
-import { SortType, TYPES } from '../const.js';
+import { SortType, EVENT_TYPES } from '../const.js';
 
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];
 const DESCRIPTIONS = [
@@ -11,6 +11,16 @@ const DESCRIPTIONS = [
   'Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.',
   'Sed sed nisi sed augue convallis suscipit in sed felis.',
   'Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.'
+];
+const OFFERS = [
+  'Lorem ipsum ',
+  'Cras aliquet varius',
+  'Aliquam id orci ut lectus varius viverra.',
+  'Nullam nunc ex',
+  'Phasellus eros mauris',
+  'Sed blandit',
+  'Sed sed nisi',
+  'Aliquam erat volutpat.'
 ];
 
 const SORTINGS = [
@@ -106,12 +116,18 @@ const createDestination = () => (
 
 const createOffer = () => ({
   'id': offerIdGenerator(),
-  'title': 'Upgrade to a business class',
+  'title': getRandomArrayElement(OFFERS),
   'price': getRandomInteger(100, 200)
 });
 
 const offers = Array.from({length: 10}, createOffer);
 const destinations = Array.from({length: 10}, createDestination);
+const offersByType = EVENT_TYPES.map(
+  (t) => ({
+    type: t,
+    offers: [getRandomArrayElement(offers),
+      getRandomArrayElement(offers),
+      getRandomArrayElement(offers)]}));
 
 const createPoint = () => (
   {
@@ -130,8 +146,8 @@ const createPoint = () => (
       getRandomInteger(0, 59)),
     'destination': getRandomArrayElement(destinations).id,
     'id': pointsIdGenerator(),
-    'offers': [getRandomArrayElement(offers).id],
-    'type': getRandomArrayElement(TYPES)
+    'offers': [offersByType[0].offers[0].id],
+    'type': offersByType[0].type
   }
 );
 
@@ -141,4 +157,5 @@ export const getPoints = () => points;
 export const getOffers = () => offers;
 export const getDestinations = () => destinations;
 export const getSortings = () => SORTINGS;
+export const getOffersByType = () => offersByType;
 

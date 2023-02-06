@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
 const createFiltersTemplate = () => `
     <form class="trip-filters" action="#" method="get">
@@ -16,7 +16,7 @@ const createFiltersTemplate = () => `
     </form>
 `;
 
-const createHeaderTemplate = () =>
+const createHeaderTemplate = (newEventCLicked) =>
   `
     <header class="page-header">
       <div class="page-body__container  page-header__container">
@@ -37,29 +37,31 @@ const createHeaderTemplate = () =>
             </div>
           </div>
 
-          <button class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
+          <button ${newEventCLicked ? 'disabled' : null} class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
         </div>
       </div>
     </header>
   `;
 
-export default class HeaderView extends AbstractView {
+export default class HeaderView extends AbstractStatefulView {
   #handleAllClick = null;
   #handleFutureClick = null;
+  #handleNewEventClick = null;
 
-  constructor({onAllClick, onFutureClick}) {
+  constructor({onAllClick, onFutureClick, onNewEventClick}) {
     super();
+
+    this._setState({newEventClicked: false});
+
     this.#handleAllClick = onAllClick;
     this.#handleFutureClick = onFutureClick;
+    this.#handleNewEventClick = onNewEventClick;
 
-    this.element.querySelector('#filter-everything')
-      .addEventListener('click', this.#allClickHandler);
-    this.element.querySelector('#filter-future')
-      .addEventListener('click', this.#futureClickHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createHeaderTemplate();
+    return createHeaderTemplate(this._state.newEventClicked);
   }
 
   #allClickHandler = (event) => {
@@ -71,4 +73,19 @@ export default class HeaderView extends AbstractView {
     event.preventDefault();
     this.#handleFutureClick();
   };
+
+  #newEventClickHandler = (event) => {
+    event.preventDefault();
+    this.updateElement({newEventClicked: !this._state.newEventClicked});
+    this.#handleNewEventClick();
+  };
+
+  _restoreHandlers() {
+    this.element.querySelector('#filter-everything')
+      .addEventListener('click', this.#allClickHandler);
+    this.element.querySelector('#filter-future')
+      .addEventListener('click', this.#futureClickHandler);
+    this.element.querySelector('.trip-main__event-add-btn')
+      .addEventListener('click', this.#newEventClickHandler);
+  }
 }

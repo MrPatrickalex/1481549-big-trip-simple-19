@@ -11,7 +11,8 @@ const Mode = {
 export default class PointPresenter {
   #pointsView = null;
   #point = null;
-  #offers = null;
+  #allOffers = null;
+  #offersByType = null;
   #destinations = null;
 
   #pointComponent = null;
@@ -22,9 +23,10 @@ export default class PointPresenter {
   #mode = Mode.DEFAULT;
   #onModeChange = null;
 
-  constructor({point, offers, destinations, pointsView, onDataChange, onModeChange}) {
+  constructor({point, allOffers, offersByType, destinations, pointsView, onDataChange, onModeChange}) {
     this.#point = point;
-    this.#offers = offers;
+    this.#allOffers = allOffers;
+    this.#offersByType = offersByType;
     this.#destinations = destinations;
     this.#pointsView = pointsView;
     this.#onDataChange = onDataChange;
@@ -43,8 +45,10 @@ export default class PointPresenter {
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
 
-    const pointOffers = this.#offers.filter((o) => this.#point.offers.some((o2) => o2 === o.id));
+    const pointOffers = this.#allOffers.filter((o) => this.#point.offers.some((o2) => o2 === o.id));
     const [pointDestination] = this.#destinations.filter((d) => d.id === this.#point.destination);
+
+    // console.log(pointDestination);
 
     this.#pointComponent = new EventView({
       point: this.#point,
@@ -56,7 +60,8 @@ export default class PointPresenter {
       point: this.#point,
       pointOffers,
       pointDestination,
-      allOffers: this.#offers,
+      offersByType: this.#offersByType,
+      allOffers: this.#allOffers,
       allDestinations: this.#destinations,
       onCloseClick: () => this.#closeEditMode.call(this),
       onSubmitClick: () => this.#closeEditMode.call(this),
