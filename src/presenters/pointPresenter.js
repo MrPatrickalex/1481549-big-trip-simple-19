@@ -45,24 +45,17 @@ export default class PointPresenter {
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
 
-    const pointOffers = this.#allOffers.filter((o) => this.#point.offers.some((o2) => o2 === o.id));
-    const [pointDestination] = this.#destinations.filter((d) => d.id === this.#point.destination);
-
-    // console.log(pointDestination);
-
     this.#pointComponent = new EventView({
       point: this.#point,
-      pointOffers,
-      pointDestination,
+      allOffers: this.#allOffers,
+      allDestinations: this.#destinations,
       onEditClick: () => this.#showEditMode.call(this)
     });
     this.#pointEditComponent = new EditEventView({
       point: this.#point,
-      pointOffers,
-      pointDestination,
-      offersByType: this.#offersByType,
       allOffers: this.#allOffers,
       allDestinations: this.#destinations,
+      offersByType: this.#offersByType,
       onCloseClick: () => this.#closeEditMode.call(this),
       onSubmitClick: () => this.#closeEditMode.call(this),
       onOfferChange: (offerId) => this.#handleOfferChange(offerId)

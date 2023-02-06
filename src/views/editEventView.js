@@ -130,12 +130,17 @@ export default class EditEventView extends AbstractStatefulView {
   #handleSubmit = null;
   #handleOfferChange = null;
 
-  constructor({point, pointOffers, pointDestination, offersByType, allOffers, allDestinations, onCloseClick, onSubmitClick, onOfferChange}) {
+  constructor({point, allOffers, allDestinations, offersByType, onCloseClick, onSubmitClick, onOfferChange}) {
     super();
 
-    this._setState(this.#parsePointToState(point, pointOffers, pointDestination));
+    const pointOffers = allOffers.filter((o) => point.offers.some((o2) => o2 === o.id));
+    let [pointDestination] = allDestinations.filter((d) => d.id === point.destination);
 
-    // console.log(this._state);
+    if(!pointDestination) {
+      pointDestination = createCustomDescription('');
+    }
+
+    this._setState(this.#parsePointToState(point, pointOffers, pointDestination));
 
     this.#offersByType = offersByType;
     this.#allOffers = allOffers;
@@ -202,12 +207,10 @@ export default class EditEventView extends AbstractStatefulView {
   #offerClickHandler = (event) => {
     event.preventDefault();
     const checkbox = event.target;
-    const offerId = +checkbox.dataset.id;
+    const offerId = checkbox.dataset.id;
 
     const oldPoint = this._state.point;
     const oldOffers = oldPoint.offers;
-
-    console.log(oldOffers);
 
     const newOffers = oldOffers.includes(offerId)
       ? [...oldOffers.filter((o) => o !== offerId)]
@@ -219,6 +222,7 @@ export default class EditEventView extends AbstractStatefulView {
       point: {...this._state.point, offers: newOffers},
       pointOffers: pointOffers
     });
+
     // this.#handleOfferChange(offerId);
   };
 
@@ -234,13 +238,11 @@ export default class EditEventView extends AbstractStatefulView {
       ...this._state,
       pointDestination: findedDestinations ? findedDestinations : createCustomDescription(destinationInputValue)
     });
-
-    console.log(this._state);
   };
 
   #eventTypeClickHandler = (event) => {
     event.preventDefault();
     const type = event.target.value;
-    this.updateElement({point: {...this._state, type: type}});
+    this.updateElement({point: {...this._state.point, type: type}});
   };
 }

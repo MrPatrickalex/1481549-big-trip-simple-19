@@ -1,5 +1,6 @@
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
 import { SortType, EVENT_TYPES } from '../const.js';
+import { nanoid } from 'nanoid';
 
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];
 const DESCRIPTIONS = [
@@ -66,27 +67,9 @@ const SORTINGS = [
   },
 ];
 
-const createIdGenerator = (min, max) => {
-  let usedIds = [];
-  let ids = [];
-  for (let i = min; i <= max; i++) {
-    ids = [...ids, i];
-  }
-  return () => {
-    const notUsedIds = ids.filter((id) => !usedIds.includes(id));
-    const randomId = notUsedIds[getRandomInteger(0, notUsedIds.length - 1)];
-    usedIds = [...usedIds, randomId];
-    return randomId;
-  };
-};
-
-const offerIdGenerator = createIdGenerator(1, 100);
-const destinationIdGenerator = createIdGenerator(1, 100);
-const pointsIdGenerator = createIdGenerator(1, 100);
-
 const createDestination = () => (
   {
-    'id': destinationIdGenerator(),
+    'id': nanoid(),
     'description': getRandomArrayElement(DESCRIPTIONS),
     'name': getRandomArrayElement(NAMES),
     'pictures': [
@@ -115,7 +98,7 @@ const createDestination = () => (
 );
 
 const createOffer = () => ({
-  'id': offerIdGenerator(),
+  'id': nanoid(),
   'title': getRandomArrayElement(OFFERS),
   'price': getRandomInteger(100, 200)
 });
@@ -145,9 +128,11 @@ const createPoint = () => (
       getRandomInteger(1, 12),
       getRandomInteger(0, 59)),
     'destination': getRandomArrayElement(destinations).id,
-    'id': pointsIdGenerator(),
-    'offers': [offersByType[0].offers[0].id],
-    'type': offersByType[0].type
+    'id': nanoid(),
+    // 'offers': [offersByType[0].offers[0].id],
+    // 'type': offersByType[0].type
+    'offers': [getRandomArrayElement(offers).id],
+    'type': getRandomArrayElement(EVENT_TYPES)
   }
 );
 

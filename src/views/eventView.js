@@ -15,12 +15,14 @@ const createTemplate = (point, offers, destination) => {
   const destinationName = destination.name;
   const typeCap = capitalizeFirstLetter(type);
 
+  // console.log(offers);
+
   return `
   <li class="trip-events__item">
       <div class="event">
         <time class="event__date" datetime="${date_from}">${date}</time>
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/taxi.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
         <h3 class="event__title">${typeCap} ${destinationName}</h3>
         <div class="event__schedule">
@@ -56,12 +58,18 @@ export default class EventView extends AbstractView {
   #pointDestination = null;
   #handleEditClick = null;
 
-  constructor({point, pointOffers, pointDestination, onEditClick}) {
+  constructor({point, allOffers, allDestinations, onEditClick}) {
     super();
+
+    // console.log(point.offers);
+
+    const pointOffers = allOffers.filter((o) => point.offers.some((o2) => o2 === o.id));
+    const [pointDestination] = allDestinations.filter((d) => d.id === point.destination);
+
     this.#point = point;
+    this.#handleEditClick = onEditClick;
     this.#pointOffers = pointOffers;
     this.#pointDestination = pointDestination;
-    this.#handleEditClick = onEditClick;
 
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#handleEditClick);
