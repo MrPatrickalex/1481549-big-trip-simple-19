@@ -131,12 +131,13 @@ const createPoint = () => (
     'id': nanoid(),
     // 'offers': [offersByType[0].offers[0].id],
     // 'type': offersByType[0].type
-    'offers': [getRandomArrayElement(offers).id],
+    // 'offers': [getRandomArrayElement(offers).id],
+    'offers': [],
     'type': getRandomArrayElement(EVENT_TYPES)
   }
 );
 
-const points = Array.from({length: 15}, createPoint);
+const points = Array.from({length: 5}, createPoint);
 
 export const getPoints = () => points;
 export const getOffers = () => offers;

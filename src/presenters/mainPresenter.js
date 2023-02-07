@@ -10,6 +10,7 @@ import PointPresenter from './pointPresenter.js';
 import NewPointPresenter from './newPointPresenter.js';
 import Observable from '../framework/observable.js';
 import { BLANK_POINT, SortType } from '../const.js';
+import {UserAction, UpdateType} from '../const.js';
 
 export default class MainPresenter extends Observable {
   #headerView = null;
@@ -21,7 +22,6 @@ export default class MainPresenter extends Observable {
   #bodyContainer = null;
   #pointsModel = null;
 
-  #points = null;
   #offers = null;
   #destinations = null;
   #sortings = null;
@@ -37,11 +37,50 @@ export default class MainPresenter extends Observable {
     super();
     this.#bodyContainer = bodyContainer;
     this.#pointsModel = pointsModel;
-    this.#points = this.#pointsModel.getPoints();
-    this.#offers = this.#pointsModel.getOffers();
-    this.#offersByType = this.#pointsModel.getOffersByType();
-    this.#destinations = this.#pointsModel.getDestinations();
-    this.#sortings = this.#pointsModel.getSortingsFilters();
+    //this.#points = this.#pointsModel.points;
+    this.#offers = this.#pointsModel.offers;
+    this.#offersByType = this.#pointsModel.offersByType;
+    this.#destinations = this.#pointsModel.destinations;
+    this.#sortings = this.#pointsModel.sortingsFilters;
+
+    this.#pointsModel.addObserver(this.#handleModelEvent);
+  }
+
+  get points() {
+    switch(this.#currentSortType) {
+      case SortType.DAY:
+        return [...this.#pointsModel.points.sort((p1, p2) => {
+          if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
+            return -1;
+          } else {
+            return 1;
+          }
+        })];
+      case SortType.EVENT:
+        return [...this.#pointsModel.points];
+      case SortType.TIME:
+        return [...this.#pointsModel.points.sort((p1, p2) => {
+          const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
+          const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
+
+          if(timeFirst < timeSecond) {
+            return -1;
+          } else {
+            return 1;
+          }
+        })];
+      case SortType.PRICE:
+        return [...this.#pointsModel.points.sort((p1, p2) => {
+          if(p1.base_price < p2.base_price) {
+            return -1;
+          } else {
+            return 1;
+          }
+        })];
+      case SortType.OFFER:
+        break;
+    }
+    return this.#pointsModel.points;
   }
 
   init() {
@@ -49,18 +88,18 @@ export default class MainPresenter extends Observable {
     this.#renderContentContainer();
     this.#renderSort();
     this.#renderPointsContainer();
-    this.#renderPoints();
+    this.#renderPointsList();
   }
 
   #resetFiter() {
-    this.#points = this.#pointsModel
-      .getPoints();
-    this.#renderPoints();
+    // this.#points = this.#pointsModel
+    //   .getPoints();
+    // this.#renderPoints();
   }
 
   #resetSort() {
-    this.#sortTasks(SortType.DAY);
-    this.#renderPoints();
+    // this.#sortTasks(SortType.DAY);
+    // this.#renderPoints();
   }
 
   #renderHeader() {
@@ -69,10 +108,10 @@ export default class MainPresenter extends Observable {
         this.#resetFiter();
       },
       onFutureClick: () => {
-        this.#points = this.#pointsModel
-          .getPoints()
-          .filter((p) => dayjs().isBefore(p.date_from));
-        this.#renderPoints();
+        // this.#points = this.#pointsModel
+        //   .getPoints()
+        //   .filter((p) => dayjs().isBefore(p.date_from));
+        // this.#renderPoints();
       },
       onNewEventClick: () => {
         if(!this.#isNewEventOpened) {
@@ -100,51 +139,12 @@ export default class MainPresenter extends Observable {
         if(this.#currentSortType === sortType) {
           return;
         }
-        this.#sortTasks(sortType);
-        this.#renderPoints();
+        this.#currentSortType = sortType;
+        this.#clearPointsList();
+        this.#renderPointsList();
       }
     });
     render(this.#sortView, contentContainer);
-  }
-
-  #sortTasks(sortType) {
-    switch(sortType) {
-      case SortType.DAY:
-        this.#points.sort((p1, p2) => {
-          if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
-            return -1;
-          } else {
-            return 1;
-          }
-        });
-        break;
-      case SortType.EVENT:
-        break;
-      case SortType.TIME:
-        this.#points.sort((p1, p2) => {
-          const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
-          const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
-
-          if(timeFirst < timeSecond) {
-            return -1;
-          } else {
-            return 1;
-          }
-        });
-        break;
-      case SortType.PRICE:
-        this.#points.sort((p1, p2) => {
-          if(p1.base_price < p2.base_price) {
-            return -1;
-          } else {
-            return 1;
-          }
-        });
-        break;
-      case SortType.OFFER:
-        break;
-    }
-    this.#currentSortType = sortType;
   }
 
   #renderPointsContainer() {
@@ -161,7 +161,7 @@ export default class MainPresenter extends Observable {
         offers: this.#offers,
         destinations: this.#destinations,
         pointsView: this.#pointsView,
-        onDataChange: (e) => this.#handlePointChange(e),
+        onDataChange: (e) => this.#handleViewAction(e),
         onClose: () => {
           this.#isNewEventOpened = false;
           remove(this.#headerView);
@@ -178,14 +178,12 @@ export default class MainPresenter extends Observable {
     this.#newEventPresenter.renderPoint();
   }
 
-  #renderPoints() {
+  #renderPointsList() {
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
-    this.#clearPointList();
-
-    if(this.#points.length > 0) {
-      this.#points.forEach((p) => this.createPoint(p));
+    if(this.points.length > 0) {
+      this.points.forEach((p) => this.createPoint(p));
     } else {
       render(this.#emptyView, contentContainer);
     }
@@ -198,7 +196,7 @@ export default class MainPresenter extends Observable {
       offersByType: this.#offersByType,
       destinations: this.#destinations,
       pointsView: this.#pointsView,
-      onDataChange: (e) => this.#handlePointChange(e),
+      onDataChange: this.#handleViewAction,
       onModeChange: () => this.#handleModeChange()
     });
 
@@ -206,21 +204,45 @@ export default class MainPresenter extends Observable {
     pointPresenter.renderPoint();
   }
 
-  #clearPointList() {
+  #clearPointsList() {
     this.#pointPresentersMap.forEach((presenter) => presenter.destroy());
     this.#pointPresentersMap.clear();
   }
 
-  #handlePointChange(updatedPoint) {
-    this.#points = this.#points.map(
-      (point) => point.id === updatedPoint.id ? updatedPoint : point);
+  #handleViewAction = (actionType, updateType, update) => {
+    //console.log('ViewAction', actionType, updateType, update);
 
-    const presenter = this.#pointPresentersMap.get(updatedPoint.id);
-    presenter.point = updatedPoint;
+    switch(actionType) {
+      case UserAction.UPDATE_TASK:
+        this.#pointsModel.updatePoint(updateType, update);
+        break;
+      case UserAction.ADD_TASK:
+        this.#pointsModel.addPoint(updateType, update);
+        break;
+      case UserAction.DELETE_TASK:
+        this.#pointsModel.removePoint(updateType, update);
+        break;
+    }
+  };
 
-    // console.log(updatedPoint);
-    presenter.renderPoint();
-  }
+  #handleModelEvent = (updateType, data) => {
+    //console.log('ModelAction', updateType, data);
+    const pointPresenter = this.#pointPresentersMap.get(data.id);
+
+    switch (updateType) {
+      case UpdateType.PATCH:
+        // - обновить часть списка (например, когда поменялось описание)
+        pointPresenter.point = data;
+        pointPresenter.renderPoint();
+        break;
+      case UpdateType.MINOR:
+        // - обновить список (например, когда задача ушла в архив)
+        break;
+      case UpdateType.MAJOR:
+        // - обновить всю доску (например, при переключении фильтра)
+        break;
+    }
+  };
 
   #handleModeChange = () => {
     this.#pointPresentersMap.forEach((presenter) => presenter.resetView());

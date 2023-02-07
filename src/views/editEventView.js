@@ -189,11 +189,9 @@ export default class EditEventView extends AbstractStatefulView {
     };
   }
 
-  #parseStateToPoint(point, pointOffers, poinDestination) {
+  #parseStateToPoint() {
     return {
-      point,
-      pointOffers,
-      poinDestination
+      ...this._state.point
     };
   }
 
@@ -212,6 +210,9 @@ export default class EditEventView extends AbstractStatefulView {
 
     this.element.querySelector('.event__input--destination')
       .addEventListener('change', this.#destinationChangeHandler);
+
+    this.element.querySelector('.event__input--price')
+      .addEventListener('change', this.#priceChangeHandler);
 
     this.#setDatepicker();
   }
@@ -245,7 +246,7 @@ export default class EditEventView extends AbstractStatefulView {
 
   #submitClickHandler = (event) => {
     event.preventDefault();
-    this.#handleSubmit();
+    this.#handleSubmit(this.#parseStateToPoint());
   };
 
   #offerClickHandler = (event) => {
@@ -280,6 +281,7 @@ export default class EditEventView extends AbstractStatefulView {
 
     this.updateElement({
       ...this._state,
+      point: {...this._state.point, destination: findedDestinations.id},
       pointDestination: findedDestinations ? findedDestinations : createCustomDescription(destinationInputValue)
     });
   };
@@ -287,7 +289,13 @@ export default class EditEventView extends AbstractStatefulView {
   #eventTypeClickHandler = (event) => {
     event.preventDefault();
     const type = event.target.value;
-    this.updateElement({point: {...this._state.point, type: type}});
+    this.updateElement({point: {...this._state.point, type: type, offers: []}});
+  };
+
+  #priceChangeHandler = (event) => {
+    event.preventDefault();
+    const price = event.target.value;
+    this.updateElement({point: {...this._state.point, base_price: price}});
   };
 
   #fromDateChangeHandler = ([userDate]) => {
