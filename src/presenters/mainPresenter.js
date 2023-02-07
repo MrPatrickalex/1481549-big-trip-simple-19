@@ -115,9 +115,11 @@ export default class MainPresenter extends Observable {
       },
       onNewEventClick: () => {
         if(!this.#isNewEventOpened) {
+          console.log('render newEvent');
           this.#resetFiter();
           this.#resetSort();
           this.#renderNewEvent();
+          this.#isNewEventOpened = true;
         }
       }
     });
@@ -161,16 +163,16 @@ export default class MainPresenter extends Observable {
         offers: this.#offers,
         destinations: this.#destinations,
         pointsView: this.#pointsView,
-        onDataChange: (e) => this.#handleViewAction(e),
         onClose: () => {
           this.#isNewEventOpened = false;
           remove(this.#headerView);
           this.#renderHeader();
         },
-        onSubmit: () => {
+        onSubmit: (actionType, updateType, update) => {
           this.#isNewEventOpened = false;
           remove(this.#headerView);
           this.#renderHeader();
+          this.#handleViewAction(actionType, updateType, update);
         }
       });
     }
@@ -210,7 +212,7 @@ export default class MainPresenter extends Observable {
   }
 
   #handleViewAction = (actionType, updateType, update) => {
-    //console.log('ViewAction', actionType, updateType, update);
+    console.log('ViewAction', actionType, updateType, update);
 
     switch(actionType) {
       case UserAction.UPDATE_TASK:
@@ -236,6 +238,8 @@ export default class MainPresenter extends Observable {
         pointPresenter.renderPoint();
         break;
       case UpdateType.MINOR:
+        this.#clearPointsList();
+        this.#renderPointsList();
         // - обновить список (например, когда задача ушла в архив)
         break;
       case UpdateType.MAJOR:

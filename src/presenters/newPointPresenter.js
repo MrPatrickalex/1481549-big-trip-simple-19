@@ -1,6 +1,7 @@
 import {render, replace, remove, RenderPosition} from '../framework/render.js';
 import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
+import {UserAction, UpdateType} from '../const.js';
 
 export default class NewPointPresenter {
   #pointsView = null;
@@ -15,13 +16,12 @@ export default class NewPointPresenter {
   #onClose = null;
   #onSubmit = null;
 
-  constructor({point, offersByType, offers, destinations, pointsView, onDataChange, onClose, onSubmit}) {
+  constructor({point, offersByType, offers, destinations, pointsView, onClose, onSubmit}) {
     this.#point = point;
     this.#offers = offers;
     this.offersByType = offersByType;
     this.#destinations = destinations;
     this.#pointsView = pointsView;
-    this.#onDataChange = onDataChange;
     this.#onClose = onClose;
     this.#onSubmit = onSubmit;
   }
@@ -35,30 +35,26 @@ export default class NewPointPresenter {
   }
 
   renderPoint() {
-    const prevPointEditComponent = this.#pointEditComponent;
-
     this.#pointEditComponent = new EditEventView({
       point: this.#point,
       allOffers: this.#offers,
       allDestinations: this.#destinations,
       offersByType: this.offersByType,
       onCloseClick: () => this.#closeHandler(),
-      onSubmitClick: () => this.#submitHandler(),
+      onSubmitClick: (point) => {
+        this.#handleFormSubmit(point);
+        this.#closeEditMode.call(this);
+      },
       onOfferChange: (offerId) => this.#handleOfferChange(offerId)
     });
 
     document.addEventListener('keydown', this.#escapeHander);
-    if(prevPointEditComponent === null) {
-      render(this.#pointEditComponent, this.#pointsView.element, RenderPosition.AFTERBEGIN);
-      return;
-    }
-    replace(this.#pointEditComponent, prevPointEditComponent);
-    remove(prevPointEditComponent);
+    render(this.#pointEditComponent, this.#pointsView.element, RenderPosition.AFTERBEGIN);
   }
 
   #closeHandler = () => {
-    this.#onClose();
     this.#closeEditMode.call(this);
+    this.#onClose();
   };
 
   #submitHandler = () => {
@@ -77,16 +73,8 @@ export default class NewPointPresenter {
     }
   };
 
-  // #showEditMode() {
-  //   if(this.#mode === Mode.EDITING) {
-  //     return;
-  //   }
-  //   this.#changeViewToForm.call(this);
-  //   document.addEventListener('keydown', this.#escapeHander);
-  // }
 
   #closeEditMode() {
-    // this.#changeFormToView.call(this);
     this.destroy();
     document.removeEventListener('keydown', this.#escapeHander);
   }
@@ -101,5 +89,13 @@ export default class NewPointPresenter {
       : [...this.#point.offers, offerId];
 
     this.#onDataChange({...this.#point, offers: newOffers});
+  };
+
+  #handleFormSubmit = (point) => {
+    this.#onSubmit(
+      UserAction.ADD_TASK,
+      UpdateType.MINOR,
+      point,
+    );
   };
 }
