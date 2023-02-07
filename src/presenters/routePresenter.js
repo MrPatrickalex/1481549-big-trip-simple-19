@@ -9,10 +9,10 @@ import dayjs from 'dayjs';
 import PointPresenter from './pointPresenter.js';
 import NewPointPresenter from './newPointPresenter.js';
 import Observable from '../framework/observable.js';
-import { BLANK_POINT, SortType } from '../const.js';
+import { BLANK_POINT, FilterType, SortType } from '../const.js';
 import {UserAction, UpdateType} from '../const.js';
 
-export default class MainPresenter extends Observable {
+export default class RoutePresenter extends Observable {
   #headerView = null;
   #sortView = null;
   #contentView = new ContentView();
@@ -21,6 +21,7 @@ export default class MainPresenter extends Observable {
 
   #bodyContainer = null;
   #pointsModel = null;
+  #filterModel = null;
 
   #offers = null;
   #destinations = null;
@@ -33,23 +34,36 @@ export default class MainPresenter extends Observable {
 
   #currentSortType = SortType.DEFAULT;
 
-  constructor({bodyContainer, pointsModel}) {
+  constructor({bodyContainer, pointsModel, filterModel}) {
     super();
     this.#bodyContainer = bodyContainer;
     this.#pointsModel = pointsModel;
-    //this.#points = this.#pointsModel.points;
+    this.#filterModel = filterModel;
     this.#offers = this.#pointsModel.offers;
     this.#offersByType = this.#pointsModel.offersByType;
     this.#destinations = this.#pointsModel.destinations;
     this.#sortings = this.#pointsModel.sortingsFilters;
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
+    let filtered = [];
+
+    switch(this.#filterModel.filter) {
+      case FilterType.EVERYTHING:
+        filtered = [...this.#pointsModel.points];
+        break;
+      case FilterType.FUTURE:
+        filtered = [...this.#pointsModel.points
+          .filter((p) => dayjs(p.date_from).isAfter(dayjs()))];
+        break;
+    }
+
     switch(this.#currentSortType) {
       case SortType.DAY:
-        return [...this.#pointsModel.points.sort((p1, p2) => {
+        return [...filtered.sort((p1, p2) => {
           if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
             return -1;
           } else {
@@ -57,9 +71,9 @@ export default class MainPresenter extends Observable {
           }
         })];
       case SortType.EVENT:
-        return [...this.#pointsModel.points];
+        return [...filtered];
       case SortType.TIME:
-        return [...this.#pointsModel.points.sort((p1, p2) => {
+        return [...filtered.sort((p1, p2) => {
           const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
           const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
 
@@ -70,7 +84,7 @@ export default class MainPresenter extends Observable {
           }
         })];
       case SortType.PRICE:
-        return [...this.#pointsModel.points.sort((p1, p2) => {
+        return [...filtered.sort((p1, p2) => {
           if(p1.base_price < p2.base_price) {
             return -1;
           } else {
@@ -80,7 +94,7 @@ export default class MainPresenter extends Observable {
       case SortType.OFFER:
         break;
     }
-    return this.#pointsModel.points;
+    return filtered;
   }
 
   init() {
@@ -92,30 +106,23 @@ export default class MainPresenter extends Observable {
   }
 
   #resetFiter() {
-    // this.#points = this.#pointsModel
-    //   .getPoints();
-    // this.#renderPoints();
+    this.#filterModel.filter = FilterType.EVERYTHING;
   }
 
   #resetSort() {
-    // this.#sortTasks(SortType.DAY);
-    // this.#renderPoints();
+    this.#currentSortType = SortType.DAY;
   }
 
   #renderHeader() {
     this.#headerView = new HeaderView({
       onAllClick: () => {
-        this.#resetFiter();
+        this.#filterModel.setFilter(UpdateType.MINOR, FilterType.EVERYTHING);
       },
       onFutureClick: () => {
-        // this.#points = this.#pointsModel
-        //   .getPoints()
-        //   .filter((p) => dayjs().isBefore(p.date_from));
-        // this.#renderPoints();
+        this.#filterModel.setFilter(UpdateType.MINOR, FilterType.FUTURE);
       },
       onNewEventClick: () => {
         if(!this.#isNewEventOpened) {
-          console.log('render newEvent');
           this.#resetFiter();
           this.#resetSort();
           this.#renderNewEvent();
@@ -184,6 +191,8 @@ export default class MainPresenter extends Observable {
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
+    // const filtered = this.points
+
     if(this.points.length > 0) {
       this.points.forEach((p) => this.createPoint(p));
     } else {
@@ -212,7 +221,7 @@ export default class MainPresenter extends Observable {
   }
 
   #handleViewAction = (actionType, updateType, update) => {
-    console.log('ViewAction', actionType, updateType, update);
+    //console.log('ViewAction', actionType, updateType, update);
 
     switch(actionType) {
       case UserAction.UPDATE_TASK:

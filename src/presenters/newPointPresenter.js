@@ -1,4 +1,4 @@
-import {render, replace, remove, RenderPosition} from '../framework/render.js';
+import {render, remove, RenderPosition} from '../framework/render.js';
 import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import {UserAction, UpdateType} from '../const.js';
