@@ -1,5 +1,5 @@
-import {render} from '../framework/render.js';
-import EditEventView from '../views/editEventView.js';
+import {render, remove, RenderPosition} from '../framework/render.js';
+// import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';
 import HeaderView from '../views/headerView.js';
 import PointsView from '../views/pointsView.js';
@@ -7,9 +7,11 @@ import SortView from '../views/sortView.js';
 import EmptyListView from '../views/emptyListBoilerplate.js';
 import dayjs from 'dayjs';
 import PointPresenter from './pointPresenter.js';
+import NewPointPresenter from './newPointPresenter.js';
+import Observable from '../framework/observable.js';
 import { BLANK_POINT, SortType } from '../const.js';
 
-export default class MainPresenter {
+export default class MainPresenter extends Observable {
   #headerView = null;
   #sortView = null;
   #contentView = new ContentView();
@@ -23,17 +25,21 @@ export default class MainPresenter {
   #offers = null;
   #destinations = null;
   #sortings = null;
+  #offersByType = null;
 
-  #isNewEventOpened = true;
+  #isNewEventOpened = false;
+  #newEventPresenter = null;
   #pointPresentersMap = new Map();
 
   #currentSortType = SortType.DEFAULT;
 
   constructor({bodyContainer, pointsModel}) {
+    super();
     this.#bodyContainer = bodyContainer;
     this.#pointsModel = pointsModel;
     this.#points = this.#pointsModel.getPoints();
     this.#offers = this.#pointsModel.getOffers();
+    this.#offersByType = this.#pointsModel.getOffersByType();
     this.#destinations = this.#pointsModel.getDestinations();
     this.#sortings = this.#pointsModel.getSortingsFilters();
   }
@@ -46,22 +52,38 @@ export default class MainPresenter {
     this.#renderPoints();
   }
 
+  #resetFiter() {
+    this.#points = this.#pointsModel
+      .getPoints();
+    this.#renderPoints();
+  }
+
+  #resetSort() {
+    this.#sortTasks(SortType.DAY);
+    this.#renderPoints();
+  }
+
   #renderHeader() {
     this.#headerView = new HeaderView({
       onAllClick: () => {
-        this.#points = this.#pointsModel
-          .getPoints();
-        this.#renderPoints();
+        this.#resetFiter();
       },
       onFutureClick: () => {
         this.#points = this.#pointsModel
           .getPoints()
           .filter((p) => dayjs().isBefore(p.date_from));
         this.#renderPoints();
+      },
+      onNewEventClick: () => {
+        if(!this.#isNewEventOpened) {
+          this.#resetFiter();
+          this.#resetSort();
+          this.#renderNewEvent();
+        }
       }
     });
 
-    render(this.#headerView, this.#bodyContainer);
+    render(this.#headerView, this.#bodyContainer, RenderPosition.AFTERBEGIN);
   }
 
   #renderContentContainer() {
@@ -131,20 +153,36 @@ export default class MainPresenter {
     render(this.#pointsView, contentContainer);
   }
 
+  #renderNewEvent() {
+    if(this.#newEventPresenter === null) {
+      this.#newEventPresenter = new NewPointPresenter({
+        point: BLANK_POINT,
+        offersByType: this.#offersByType,
+        offers: this.#offers,
+        destinations: this.#destinations,
+        pointsView: this.#pointsView,
+        onDataChange: (e) => this.#handlePointChange(e),
+        onClose: () => {
+          this.#isNewEventOpened = false;
+          remove(this.#headerView);
+          this.#renderHeader();
+        },
+        onSubmit: () => {
+          this.#isNewEventOpened = false;
+          remove(this.#headerView);
+          this.#renderHeader();
+        }
+      });
+    }
+
+    this.#newEventPresenter.renderPoint();
+  }
+
   #renderPoints() {
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
     this.#clearPointList();
-
-    if(this.#isNewEventOpened) {
-      render(new EditEventView({
-        point: BLANK_POINT,
-        pointOffers: BLANK_POINT.offers,
-        pointDestination: BLANK_POINT.destination,
-        allOffers: this.#offers,
-        allDestinations: this.#destinations}), this.#pointsView.element);
-    }
 
     if(this.#points.length > 0) {
       this.#points.forEach((p) => this.createPoint(p));
@@ -156,7 +194,8 @@ export default class MainPresenter {
   createPoint(point) {
     const pointPresenter = new PointPresenter({
       point,
-      offers: this.#offers,
+      allOffers: this.#offers,
+      offersByType: this.#offersByType,
       destinations: this.#destinations,
       pointsView: this.#pointsView,
       onDataChange: (e) => this.#handlePointChange(e),

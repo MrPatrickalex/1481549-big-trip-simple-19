@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-export const TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+export const EVENT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
 export const SortType = {
   DAY: 'day',
@@ -17,5 +17,5 @@ export const BLANK_POINT = {
   'destination': -1,
   'id': nanoid(),
   'offers': [],
-  'type': TYPES[0]
+  'type': EVENT_TYPES[0]
 };

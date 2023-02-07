@@ -1,5 +1,6 @@
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
-import { SortType, TYPES } from '../const.js';
+import { SortType, EVENT_TYPES } from '../const.js';
+import { nanoid } from 'nanoid';
 
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];
 const DESCRIPTIONS = [
@@ -11,6 +12,16 @@ const DESCRIPTIONS = [
   'Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.',
   'Sed sed nisi sed augue convallis suscipit in sed felis.',
   'Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.'
+];
+const OFFERS = [
+  'Lorem ipsum ',
+  'Cras aliquet varius',
+  'Aliquam id orci ut lectus varius viverra.',
+  'Nullam nunc ex',
+  'Phasellus eros mauris',
+  'Sed blandit',
+  'Sed sed nisi',
+  'Aliquam erat volutpat.'
 ];
 
 const SORTINGS = [
@@ -56,27 +67,9 @@ const SORTINGS = [
   },
 ];
 
-const createIdGenerator = (min, max) => {
-  let usedIds = [];
-  let ids = [];
-  for (let i = min; i <= max; i++) {
-    ids = [...ids, i];
-  }
-  return () => {
-    const notUsedIds = ids.filter((id) => !usedIds.includes(id));
-    const randomId = notUsedIds[getRandomInteger(0, notUsedIds.length - 1)];
-    usedIds = [...usedIds, randomId];
-    return randomId;
-  };
-};
-
-const offerIdGenerator = createIdGenerator(1, 100);
-const destinationIdGenerator = createIdGenerator(1, 100);
-const pointsIdGenerator = createIdGenerator(1, 100);
-
 const createDestination = () => (
   {
-    'id': destinationIdGenerator(),
+    'id': nanoid(),
     'description': getRandomArrayElement(DESCRIPTIONS),
     'name': getRandomArrayElement(NAMES),
     'pictures': [
@@ -105,13 +98,19 @@ const createDestination = () => (
 );
 
 const createOffer = () => ({
-  'id': offerIdGenerator(),
-  'title': 'Upgrade to a business class',
+  'id': nanoid(),
+  'title': getRandomArrayElement(OFFERS),
   'price': getRandomInteger(100, 200)
 });
 
 const offers = Array.from({length: 10}, createOffer);
 const destinations = Array.from({length: 10}, createDestination);
+const offersByType = EVENT_TYPES.map(
+  (t) => ({
+    type: t,
+    offers: [getRandomArrayElement(offers),
+      getRandomArrayElement(offers),
+      getRandomArrayElement(offers)]}));
 
 const createPoint = () => (
   {
@@ -129,9 +128,11 @@ const createPoint = () => (
       getRandomInteger(1, 12),
       getRandomInteger(0, 59)),
     'destination': getRandomArrayElement(destinations).id,
-    'id': pointsIdGenerator(),
+    'id': nanoid(),
+    // 'offers': [offersByType[0].offers[0].id],
+    // 'type': offersByType[0].type
     'offers': [getRandomArrayElement(offers).id],
-    'type': getRandomArrayElement(TYPES)
+    'type': getRandomArrayElement(EVENT_TYPES)
   }
 );
 
@@ -141,4 +142,5 @@ export const getPoints = () => points;
 export const getOffers = () => offers;
 export const getDestinations = () => destinations;
 export const getSortings = () => SORTINGS;
+export const getOffersByType = () => offersByType;
 
