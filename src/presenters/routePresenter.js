@@ -106,7 +106,7 @@ export default class RoutePresenter extends Observable {
   }
 
   #resetFiter() {
-    this.#filterModel.filter = FilterType.EVERYTHING;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
   }
 
   #resetSort() {
@@ -114,12 +114,16 @@ export default class RoutePresenter extends Observable {
   }
 
   #renderHeader() {
+    if(this.#headerView) {
+      remove(this.#headerView);
+    }
     this.#headerView = new HeaderView({
+      currentFilter: this.#filterModel.filter,
       onAllClick: () => {
-        this.#filterModel.setFilter(UpdateType.MINOR, FilterType.EVERYTHING);
+        this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
       },
       onFutureClick: () => {
-        this.#filterModel.setFilter(UpdateType.MINOR, FilterType.FUTURE);
+        this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.FUTURE);
       },
       onNewEventClick: () => {
         if(!this.#isNewEventOpened) {
@@ -253,6 +257,9 @@ export default class RoutePresenter extends Observable {
         break;
       case UpdateType.MAJOR:
         // - обновить всю доску (например, при переключении фильтра)
+        this.#renderHeader();
+        this.#clearPointsList();
+        this.#renderPointsList();
         break;
     }
   };
