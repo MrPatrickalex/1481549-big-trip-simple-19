@@ -1,13 +1,13 @@
 import {render, remove, RenderPosition} from '../framework/render.js';
 // import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';
-import HeaderView from '../views/headerView.js';
 import PointsView from '../views/pointsView.js';
 import SortView from '../views/sortView.js';
 import EmptyListView from '../views/emptyListBoilerplate.js';
 import dayjs from 'dayjs';
 import PointPresenter from './pointPresenter.js';
 import NewPointPresenter from './newPointPresenter.js';
+import FilterPresenter from './filterPresenter.js';
 import Observable from '../framework/observable.js';
 import { BLANK_POINT, FilterType, SortType } from '../const.js';
 import {UserAction, UpdateType} from '../const.js';
@@ -29,6 +29,7 @@ export default class RoutePresenter extends Observable {
   #offersByType = null;
 
   #isNewEventOpened = false;
+  #filterPresenter = null;
   #newEventPresenter = null;
   #pointPresentersMap = new Map();
 
@@ -114,28 +115,25 @@ export default class RoutePresenter extends Observable {
   }
 
   #renderHeader() {
-    if(this.#headerView) {
-      remove(this.#headerView);
+    if(!this.#filterPresenter) {
+      this.#filterPresenter = new FilterPresenter({
+        filterModel: this.#filterModel,
+        onAllClick: () => {},
+        onFutureClick: () => {},
+        onNewEventClick: () => {
+          if(!this.#isNewEventOpened) {
+            this.#resetFiter();
+            this.#resetSort();
+            this.#renderNewEvent();
+            this.#isNewEventOpened = true;
+          }
+        },
+        onModelChange: this.#handleModelEvent,
+        bodyContainer: this.#bodyContainer
+      });
     }
-    this.#headerView = new HeaderView({
-      currentFilter: this.#filterModel.filter,
-      onAllClick: () => {
-        this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-      },
-      onFutureClick: () => {
-        this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.FUTURE);
-      },
-      onNewEventClick: () => {
-        if(!this.#isNewEventOpened) {
-          this.#resetFiter();
-          this.#resetSort();
-          this.#renderNewEvent();
-          this.#isNewEventOpened = true;
-        }
-      }
-    });
-
-    render(this.#headerView, this.#bodyContainer, RenderPosition.AFTERBEGIN);
+    this.#filterPresenter.reset();
+    this.#filterPresenter.init();
   }
 
   #renderContentContainer() {
