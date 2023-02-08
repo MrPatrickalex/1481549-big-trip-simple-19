@@ -280,8 +280,6 @@ export default class EditEventView extends AbstractStatefulView {
       point: {...this._state.point, offers: newOffers},
       pointOffers: pointOffers
     });
-
-    // this.#handleOfferChange(offerId);
   };
 
   #destinationChangeHandler = (event) => {

@@ -1,5 +1,5 @@
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
-import { SortType, EVENT_TYPES } from '../const.js';
+import { EVENT_TYPES } from '../const.js';
 import { nanoid } from 'nanoid';
 
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];

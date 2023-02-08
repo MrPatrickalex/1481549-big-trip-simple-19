@@ -1,4 +1,4 @@
-import {render, remove, RenderPosition} from '../framework/render.js';
+import {render, remove} from '../framework/render.js';
 // import EditEventView from '../views/editEventView.js';
 import ContentView from '../views/contentView.js';
 import PointsView from '../views/pointsView.js';
