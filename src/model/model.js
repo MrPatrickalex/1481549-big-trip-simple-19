@@ -54,8 +54,4 @@ export default class PointsModel extends Observable {
   get destinations() {
     return getDestinations();
   }
-
-  get sortingsFilters() {
-    return getSortings();
-  }
 }

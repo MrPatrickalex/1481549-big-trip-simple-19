@@ -43,7 +43,6 @@ export default class RoutePresenter extends Observable {
     this.#offers = this.#pointsModel.offers;
     this.#offersByType = this.#pointsModel.offersByType;
     this.#destinations = this.#pointsModel.destinations;
-    this.#sortings = this.#pointsModel.sortingsFilters;
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -142,7 +141,6 @@ export default class RoutePresenter extends Observable {
     const contentContainer = contentElement.querySelector('.trip-events');
 
     this.#sortView = new SortView({
-      sortings: this.#sortings,
       onSortCLick: (sortType) => {
         if(this.#currentSortType === sortType) {
           return;
