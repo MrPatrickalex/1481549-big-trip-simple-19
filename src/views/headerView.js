@@ -1,14 +1,15 @@
+import { FilterType } from '../const.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
-const createFiltersTemplate = () => `
+const createFiltersTemplate = (currentFilter) => `
     <form class="trip-filters" action="#" method="get">
       <div class="trip-filters__filter">
-          <input id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything">
+          <input ${currentFilter === FilterType.EVERYTHING ? 'checked' : null}  id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything">
           <label class="trip-filters__filter-label" for="filter-everything">Everything</label>
       </div>
 
       <div class="trip-filters__filter">
-        <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future">
+        <input ${currentFilter === FilterType.FUTURE ? 'checked' : null} id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future">
         <label class="trip-filters__filter-label" for="filter-future">Future</label>
       </div>
 
@@ -16,7 +17,7 @@ const createFiltersTemplate = () => `
     </form>
 `;
 
-const createHeaderTemplate = (newEventCLicked) =>
+const createHeaderTemplate = (newEventCLicked, currentFilter) =>
   `
     <header class="page-header">
       <div class="page-body__container  page-header__container">
@@ -33,7 +34,7 @@ const createHeaderTemplate = (newEventCLicked) =>
           <div class="trip-main__trip-controls  trip-controls">
             <div class="trip-controls__filters">
               <h2 class="visually-hidden">Filter events</h2>
-              ${createFiltersTemplate()}
+              ${createFiltersTemplate(currentFilter)}
             </div>
           </div>
 
@@ -47,8 +48,9 @@ export default class HeaderView extends AbstractStatefulView {
   #handleAllClick = null;
   #handleFutureClick = null;
   #handleNewEventClick = null;
+  #currentFilter = null;
 
-  constructor({onAllClick, onFutureClick, onNewEventClick}) {
+  constructor({currentFilter, onAllClick, onFutureClick, onNewEventClick}) {
     super();
 
     this._setState({newEventClicked: false});
@@ -56,12 +58,15 @@ export default class HeaderView extends AbstractStatefulView {
     this.#handleAllClick = onAllClick;
     this.#handleFutureClick = onFutureClick;
     this.#handleNewEventClick = onNewEventClick;
+    this.#currentFilter = currentFilter;
+
+    console.log(currentFilter);
 
     this._restoreHandlers();
   }
 
   get template() {
-    return createHeaderTemplate(this._state.newEventClicked);
+    return createHeaderTemplate(this._state.newEventClicked, this.#currentFilter);
   }
 
   #allClickHandler = (event) => {

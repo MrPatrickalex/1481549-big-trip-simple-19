@@ -12,7 +12,7 @@ const createTemplate = (point, offers, destination) => {
   const dateFrom = dayjs(date_from).format(DATE_TIME_FORMAT);
   const dateTo = dayjs(date_to).format(DATE_TIME_FORMAT);
 
-  const destinationName = destination.name;
+  const destinationName = destination ? destination.name : '';
   const typeCap = capitalizeFirstLetter(type);
 
   // console.log(offers);

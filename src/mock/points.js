@@ -1,5 +1,5 @@
 import { getRandomArrayElement, getRandomInteger } from '../utils.js';
-import { SortType, EVENT_TYPES } from '../const.js';
+import { EVENT_TYPES } from '../const.js';
 import { nanoid } from 'nanoid';
 
 const NAMES = ['Lorem', 'Cras', 'Aliquam', 'Nullam', 'Phasellus', 'Sed'];
@@ -22,49 +22,6 @@ const OFFERS = [
   'Sed blandit',
   'Sed sed nisi',
   'Aliquam erat volutpat.'
-];
-
-const SORTINGS = [
-  {
-    classList: 'trip-sort__item--day',
-    value: 'sort-day',
-    id: 'sort-day',
-    label: 'Day',
-    disabled: false,
-    sortType: SortType.DAY,
-  },
-  {
-    classList: 'trip-sort__item--event',
-    value: 'sort-event',
-    id: 'sort-event',
-    label: 'Event',
-    disabled: true,
-    sortType: SortType.EVENT,
-  },
-  {
-    classList: 'trip-sort__item--time',
-    value: 'sort-time',
-    id: 'sort-time',
-    label: 'Time',
-    disabled: false,
-    sortType: SortType.TIME,
-  },
-  {
-    classList: 'trip-sort__item--price',
-    value: 'sort-price',
-    id: 'sort-price',
-    label: 'Price',
-    disabled: false,
-    sortType: SortType.PRICE,
-  },
-  {
-    classList: 'trip-sort__item--offer',
-    value: 'sort-offer',
-    id: 'sort-offer',
-    label: 'Offers',
-    disabled: false,
-    sortType: SortType.OFFER,
-  },
 ];
 
 const createDestination = () => (
@@ -131,16 +88,16 @@ const createPoint = () => (
     'id': nanoid(),
     // 'offers': [offersByType[0].offers[0].id],
     // 'type': offersByType[0].type
-    'offers': [getRandomArrayElement(offers).id],
+    // 'offers': [getRandomArrayElement(offers).id],
+    'offers': [],
     'type': getRandomArrayElement(EVENT_TYPES)
   }
 );
 
-const points = Array.from({length: 15}, createPoint);
+const points = Array.from({length: 5}, createPoint);
 
 export const getPoints = () => points;
 export const getOffers = () => offers;
 export const getDestinations = () => destinations;
-export const getSortings = () => SORTINGS;
 export const getOffersByType = () => offersByType;
 

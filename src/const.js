@@ -2,6 +2,11 @@ import { nanoid } from 'nanoid';
 
 export const EVENT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
+export const FilterType = {
+  EVERYTHING: 'Everything',
+  FUTURE: 'Future',
+};
+
 export const SortType = {
   DAY: 'day',
   EVENT: 'event',
@@ -18,4 +23,16 @@ export const BLANK_POINT = {
   'id': nanoid(),
   'offers': [],
   'type': EVENT_TYPES[0]
+};
+
+export const UserAction = {
+  UPDATE_TASK: 'UPDATE_TASK',
+  ADD_TASK: 'ADD_TASK',
+  DELETE_TASK: 'DELETE_TASK',
+};
+
+export const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
 };

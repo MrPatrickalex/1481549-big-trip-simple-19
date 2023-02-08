@@ -2,6 +2,7 @@ import {render, replace, remove} from '../framework/render.js';
 import {isEscapeKey} from '../utils.js';
 import EditEventView from '../views/editEventView.js';
 import EventView from '../views/eventView.js';
+import {UserAction, UpdateType} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -56,9 +57,21 @@ export default class PointPresenter {
       allOffers: this.#allOffers,
       allDestinations: this.#destinations,
       offersByType: this.#offersByType,
-      onCloseClick: () => this.#closeEditMode.call(this),
-      onSubmitClick: () => this.#closeEditMode.call(this),
-      onOfferChange: (offerId) => this.#handleOfferChange(offerId)
+      onCloseClick: () => {
+        // this.resetView();
+        this.#closeEditMode.call(this);
+      },
+      onSubmitClick: (point) => {
+        // console.log(point);
+        this.#handleFormSubmit(point);
+        this.#closeEditMode.call(this);
+      },
+      onDeleteClick: (point) => {
+        // console.log(point);
+        this.#handlePointDelete(point);
+        this.#closeEditMode.call(this);
+      },
+      isNewEvent: false
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -122,11 +135,19 @@ export default class PointPresenter {
     }
   }
 
-  #handleOfferChange = (offerId) => {
-    const newOffers = this.#point.offers.includes(offerId)
-      ? [...this.#point.offers.filter((o) => o.id !== offerId)]
-      : [...this.#point.offers, offerId];
+  #handleFormSubmit = (point) => {
+    this.#onDataChange(
+      UserAction.UPDATE_TASK,
+      UpdateType.PATCH,
+      point,
+    );
+  };
 
-    this.#onDataChange({...this.#point, offers: newOffers});
+  #handlePointDelete = (point) => {
+    this.#onDataChange(
+      UserAction.DELETE_TASK,
+      UpdateType.MINOR,
+      point,
+    );
   };
 }
