@@ -66,6 +66,12 @@ export default class PointPresenter {
         this.#handleFormSubmit(point);
         this.#closeEditMode.call(this);
       },
+      onDeleteClick: (point) => {
+        // console.log(point);
+        this.#handlePointDelete(point);
+        this.#closeEditMode.call(this);
+      },
+      isNewEvent: false
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -133,6 +139,14 @@ export default class PointPresenter {
     this.#onDataChange(
       UserAction.UPDATE_TASK,
       UpdateType.PATCH,
+      point,
+    );
+  };
+
+  #handlePointDelete = (point) => {
+    this.#onDataChange(
+      UserAction.DELETE_TASK,
+      UpdateType.MINOR,
       point,
     );
   };

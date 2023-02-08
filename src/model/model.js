@@ -32,7 +32,7 @@ export default class PointsModel extends Observable {
   }
 
   removePoint(updateType, pointToRemove) {
-    const index = this.#points.findIndex((p) => p.id === updated.id);
+    const index = this.#points.findIndex((p) => p.id === pointToRemove.id);
 
     if (index === -1) {
       throw new Error('Can\'t update unexisting point');

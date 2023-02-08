@@ -107,7 +107,7 @@ const createDestinationImages = ({description, pictures}) => `
   </section>
 `;
 
-const createTemplate = (point, pointOffers, pointDestination, allDestinations, offersByType) => `
+const createTemplate = (point, pointOffers, pointDestination, allDestinations, offersByType, isNewEvent) => `
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
         ${createEventTypeSection(point)}
@@ -115,7 +115,7 @@ const createTemplate = (point, pointOffers, pointDestination, allDestinations, o
         ${createEventDateTemplate(point)}
         ${createEventPriceTemplate(point)}
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Cancel</button>
+        <button class="event__reset-btn" type="reset">${isNewEvent ? 'Cancel' : 'Delete'}</button>
       </header>
       <section class="event__details">
         ${createOfferSectionTemplate(point.type, pointOffers, offersByType)}
@@ -131,10 +131,11 @@ export default class EditEventView extends AbstractStatefulView {
   #fromDatepicker = null;
   #toDatepicker = null;
   #handleClose = null;
+  #handleDelete = null;
   #handleSubmit = null;
-  #handleOfferChange = null;
+  #isNewEvent = false;
 
-  constructor({point, allOffers, allDestinations, offersByType, onCloseClick, onSubmitClick, onOfferChange}) {
+  constructor({point, allOffers, allDestinations, offersByType, onCloseClick, onSubmitClick, onDeleteClick, isNewEvent}) {
     super();
 
     const pointOffers = allOffers.filter((o) => point.offers.some((o2) => o2 === o.id));
@@ -151,7 +152,8 @@ export default class EditEventView extends AbstractStatefulView {
     this.#allDestinations = allDestinations;
     this.#handleClose = onCloseClick;
     this.#handleSubmit = onSubmitClick;
-    this.#handleOfferChange = onOfferChange;
+    this.#handleDelete = onDeleteClick;
+    this.#isNewEvent = isNewEvent;
 
     this.#setDatepicker();
 
@@ -164,7 +166,8 @@ export default class EditEventView extends AbstractStatefulView {
       this._state.pointOffers,
       this._state.pointDestination,
       this.#allDestinations,
-      this.#offersByType);
+      this.#offersByType,
+      this.#isNewEvent);
   }
 
   removeElement() {
@@ -196,8 +199,13 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    this.element.querySelector('.event__reset-btn')
-      .addEventListener('click', this.#closeClickHandler);
+    if(this.#isNewEvent) {
+      this.element.querySelector('.event__reset-btn')
+        .addEventListener('click', this.#closeClickHandler);
+    } else {
+      this.element.querySelector('.event__reset-btn')
+        .addEventListener('click', this.#deleteClickHandler);
+    }
 
     this.element.querySelector('.event__save-btn')
       .addEventListener('click', this.#submitClickHandler);
@@ -242,6 +250,11 @@ export default class EditEventView extends AbstractStatefulView {
   #closeClickHandler = (event) => {
     event.preventDefault();
     this.#handleClose();
+  };
+
+  #deleteClickHandler = (event) => {
+    event.preventDefault();
+    this.#handleDelete(this.#parseStateToPoint());
   };
 
   #submitClickHandler = (event) => {

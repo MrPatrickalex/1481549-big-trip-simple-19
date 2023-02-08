@@ -118,8 +118,6 @@ export default class RoutePresenter extends Observable {
     if(!this.#filterPresenter) {
       this.#filterPresenter = new FilterPresenter({
         filterModel: this.#filterModel,
-        onAllClick: () => {},
-        onFutureClick: () => {},
         onNewEventClick: () => {
           if(!this.#isNewEventOpened) {
             this.#resetFiter();
@@ -128,7 +126,6 @@ export default class RoutePresenter extends Observable {
             this.#isNewEventOpened = true;
           }
         },
-        onModelChange: this.#handleModelEvent,
         bodyContainer: this.#bodyContainer
       });
     }

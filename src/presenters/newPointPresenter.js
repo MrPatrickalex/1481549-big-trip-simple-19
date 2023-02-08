@@ -45,7 +45,7 @@ export default class NewPointPresenter {
         this.#handleFormSubmit(point);
         this.#closeEditMode.call(this);
       },
-      onOfferChange: (offerId) => this.#handleOfferChange(offerId)
+      isNewEvent: true
     });
 
     document.addEventListener('keydown', this.#escapeHander);
