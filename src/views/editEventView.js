@@ -54,10 +54,10 @@ const createDestinationsTemplate = (point, pointDestination, allDestinations) =>
 const createEventDateTemplate = (point) => `
   <div class="event__field-group  event__field-group--time">
     <label class="visually-hidden" for="event-start-time-1">From</label>
-    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${point !== null && point.date_from ? dayjs(point.date_from).format(DATE_FORMAT) : dayjs().format(DATE_FORMAT)}">
+    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${point !== null && point.dateFrom ? dayjs(point.dateFrom).format(DATE_FORMAT) : dayjs().format(DATE_FORMAT)}">
     &mdash;
     <label class="visually-hidden" for="event-end-time-1">To</label>
-    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${point !== null && point.date_to ? dayjs(point.date_to).format(DATE_FORMAT) : dayjs().format(DATE_FORMAT)}">
+    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${point !== null && point.dateTo ? dayjs(point.dateTo).format(DATE_FORMAT) : dayjs().format(DATE_FORMAT)}">
   </div>
 `;
 
@@ -68,7 +68,7 @@ const createEventPriceTemplate = (point) => `
     <span class="visually-hidden">Price</span>
     &euro;
     </label>
-    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${point ? point.base_price : ''}">
+    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${point ? point.basePrice : ''}">
   </div>
 `;
 
@@ -126,7 +126,6 @@ const createTemplate = (point, pointOffers, pointDestination, allDestinations, o
 
 export default class EditEventView extends AbstractStatefulView {
   #offersByType = null;
-  #allOffers = null;
   #allDestinations = null;
   #fromDatepicker = null;
   #toDatepicker = null;
@@ -135,10 +134,11 @@ export default class EditEventView extends AbstractStatefulView {
   #handleSubmit = null;
   #isNewEvent = false;
 
-  constructor({point, allOffers, allDestinations, offersByType, onCloseClick, onSubmitClick, onDeleteClick, isNewEvent}) {
+  constructor({point, offersByType, allDestinations, isNewEvent, onCloseClick, onSubmitClick, onDeleteClick}) {
     super();
 
-    const pointOffers = allOffers.filter((o) => point.offers.some((o2) => o2 === o.id));
+    const [offersForPoint] = offersByType.filter((o) => o.type === point.type);
+    const pointOffers = offersForPoint.offers.filter((o) => point.offers.some((o2) => o2 === o.id));
     let [pointDestination] = allDestinations.filter((d) => d.id === point.destination);
 
     if(!pointDestination) {
@@ -148,7 +148,6 @@ export default class EditEventView extends AbstractStatefulView {
     this._setState(this.#parsePointToState(point, pointOffers, pointDestination));
 
     this.#offersByType = offersByType;
-    this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
     this.#handleClose = onCloseClick;
     this.#handleSubmit = onSubmitClick;
@@ -231,7 +230,7 @@ export default class EditEventView extends AbstractStatefulView {
       {
         enableTime: true,
         dateFormat: 'd/m/y H:i',
-        defaultDate: this._state.point.date_from,
+        defaultDate: this._state.point.dateFrom,
         onChange: this.#fromDateChangeHandler
       },
     );
@@ -239,9 +238,9 @@ export default class EditEventView extends AbstractStatefulView {
       this.element.querySelector('#event-end-time-1'),
       {
         enableTime: true,
-        minDate: this._state.point.date_from,
+        minDate: this._state.point.dateFrom,
         dateFormat: 'd/m/y H:i',
-        defaultDate: this._state.point.date_to,
+        defaultDate: this._state.point.dateTo,
         onChange: this.#toDateChangeHandler
       },
     );
@@ -265,7 +264,7 @@ export default class EditEventView extends AbstractStatefulView {
   #offerClickHandler = (event) => {
     event.preventDefault();
     const checkbox = event.target;
-    const offerId = checkbox.dataset.id;
+    const offerId = +checkbox.dataset.id;
 
     const oldPoint = this._state.point;
     const oldOffers = oldPoint.offers;
@@ -274,7 +273,13 @@ export default class EditEventView extends AbstractStatefulView {
       ? [...oldOffers.filter((o) => o !== offerId)]
       : [...oldOffers, offerId];
 
-    const pointOffers = this.#allOffers.filter((o) => newOffers.some((o2) => o2 === o.id));
+    // console.log('oldOffers', oldOffers);
+    // console.log('newOffers', newOffers);
+
+    const [offersForPoint] = this.#offersByType.filter((o) => o.type === this._state.point.type);
+    const pointOffers = offersForPoint.offers.filter((o) => newOffers.some((o2) => o2 === o.id));
+
+    // const pointOffers = this.#allOffers.filter((o) => newOffers.some((o2) => o2 === o.id));
 
     this.updateElement({
       point: {...this._state.point, offers: newOffers},
@@ -288,7 +293,7 @@ export default class EditEventView extends AbstractStatefulView {
     const destinationInput = event.target;
     const destinationInputValue = destinationInput.value;
 
-    const findedDestinations = this.#allDestinations.find(d => d.name === destinationInputValue);
+    const findedDestinations = this.#allDestinations.find((d) => d.name === destinationInputValue);
 
     this.updateElement({
       ...this._state,
@@ -300,20 +305,20 @@ export default class EditEventView extends AbstractStatefulView {
   #eventTypeClickHandler = (event) => {
     event.preventDefault();
     const type = event.target.value;
-    this.updateElement({point: {...this._state.point, type: type, offers: []}});
+    this.updateElement({point: {...this._state.point, type: type, offers: []}, pointOffers: []});
   };
 
   #priceChangeHandler = (event) => {
     event.preventDefault();
-    const price = event.target.value;
-    this.updateElement({point: {...this._state.point, base_price: price}});
+    const price = +event.target.value;
+    this.updateElement({point: {...this._state.point, basePrice: price}});
   };
 
   #fromDateChangeHandler = ([userDate]) => {
     this.updateElement({
       point: {
         ...this._state.point,
-        date_from: userDate
+        dateFrom: userDate
       }
     });
   };
@@ -322,7 +327,7 @@ export default class EditEventView extends AbstractStatefulView {
     this.updateElement({
       point: {
         ...this._state.point,
-        date_to: userDate
+        dateTo: userDate
       }
     });
   };

@@ -6,11 +6,11 @@ const DATE_FORMAT = 'MMM D';
 const DATE_TIME_FORMAT = 'HH:mm';
 
 const createTemplate = (point, offers, destination) => {
-  const { base_price, date_from, date_to, type } = point;
+  const { basePrice, dateFrom, dateTo, type } = point;
 
-  const date = dayjs(date_from).format(DATE_FORMAT);
-  const dateFrom = dayjs(date_from).format(DATE_TIME_FORMAT);
-  const dateTo = dayjs(date_to).format(DATE_TIME_FORMAT);
+  const dateJs = dayjs(dateFrom).format(DATE_FORMAT);
+  const dateFromJs = dayjs(dateFrom).format(DATE_TIME_FORMAT);
+  const dateToJs = dayjs(dateTo).format(DATE_TIME_FORMAT);
 
   const destinationName = destination ? destination.name : '';
   const typeCap = capitalizeFirstLetter(type);
@@ -20,20 +20,20 @@ const createTemplate = (point, offers, destination) => {
   return `
   <li class="trip-events__item">
       <div class="event">
-        <time class="event__date" datetime="${date_from}">${date}</time>
+        <time class="event__date" datetime="${dateFrom}">${dateJs}</time>
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
         <h3 class="event__title">${typeCap} ${destinationName}</h3>
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${date_from}">${dateFrom}</time>
+            <time class="event__start-time" datetime="${dateFrom}">${dateFromJs}</time>
             &mdash;
-            <time class="event__end-time" datetime="${date_to}">${dateTo}</time>
+            <time class="event__end-time" datetime="${dateTo}">${dateToJs}</time>
           </p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${base_price}</span>
+          &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
@@ -58,13 +58,14 @@ export default class EventView extends AbstractView {
   #pointDestination = null;
   #handleEditClick = null;
 
-  constructor({point, allOffers, allDestinations, onEditClick}) {
+  constructor({point, offersByType, allDestinations, onEditClick}) {
     super();
 
-    // console.log(point.offers);
 
-    const pointOffers = allOffers.filter((o) => point.offers.some((o2) => o2 === o.id));
+    const [offersForPoint] = offersByType.filter(o => o.type === point.type);
+    const pointOffers = offersForPoint.offers.filter((o) => point.offers.some((o2) => o2 === o.id));
     const [pointDestination] = allDestinations.filter((d) => d.id === point.destination);
+    // console.log('pointView', offersForPoint);
 
     this.#point = point;
     this.#handleEditClick = onEditClick;
