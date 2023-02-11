@@ -14,7 +14,6 @@ import {UserAction, UpdateType} from '../const.js';
 import LoadingView from '../views/loadingView.js';
 
 export default class RoutePresenter extends Observable {
-  #headerView = null;
   #sortView = null;
   #contentView = new ContentView();
   #pointsView = new PointsView();
@@ -124,11 +123,12 @@ export default class RoutePresenter extends Observable {
             this.#resetFiter();
             this.#resetSort();
             this.#renderNewEvent();
-            this.#isNewEventOpened = true;
+            this.#filterPresenter.setIsNewEventOpening(true);
           }
         },
         bodyContainer: this.#bodyContainer,
-        isLoading: this.#isLoading
+        isLoading: this.#isLoading,
+        isNewEventOpened: this.#isNewEventOpened
       });
     }
     this.#filterPresenter.reset();
@@ -170,16 +170,9 @@ export default class RoutePresenter extends Observable {
         offers: this.#pointsModel.offers,
         destinations: this.#pointsModel.destinations,
         pointsView: this.#pointsView,
+        onDataChange: this.#handleViewAction,
         onClose: () => {
-          this.#isNewEventOpened = false;
-          remove(this.#headerView);
-          this.#renderHeader();
-        },
-        onSubmit: (actionType, updateType, update) => {
-          this.#isNewEventOpened = false;
-          remove(this.#headerView);
-          this.#renderHeader();
-          this.#handleViewAction(actionType, updateType, update);
+          this.#filterPresenter.setIsNewEventOpening(false);
         }
       });
     }
@@ -222,18 +215,39 @@ export default class RoutePresenter extends Observable {
     this.#pointPresentersMap.clear();
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
     //console.log('ViewAction', actionType, updateType, update);
 
     switch(actionType) {
       case UserAction.UPDATE_TASK:
-        this.#pointsModel.updatePoint(updateType, update);
+        this.#pointPresentersMap.get(update.id).setSaving();
+        try {
+          await this.#pointsModel.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresentersMap.get(update.id).isSuccess = false;
+          this.#pointPresentersMap.get(update.id).setAborting();
+        }
+        //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
       case UserAction.ADD_TASK:
-        this.#pointsModel.addPoint(updateType, update);
+        this.#newEventPresenter.setSaving();
+        try {
+          await this.#pointsModel.addPoint(updateType, update);
+        } catch(err) {
+          this.#newEventPresenter.isSuccess = false;
+          this.#newEventPresenter.setAborting();
+        }
+        //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
       case UserAction.DELETE_TASK:
-        this.#pointsModel.removePoint(updateType, update);
+        this.#pointPresentersMap.get(update.id).setDeleting();
+        try {
+          await this.#pointsModel.removePoint(updateType, update);
+        } catch (error) {
+          this.#pointPresentersMap.get(update.id).isSuccess = false;
+          this.#pointPresentersMap.get(update.id).setAborting();
+        }
+        //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
     }
   };

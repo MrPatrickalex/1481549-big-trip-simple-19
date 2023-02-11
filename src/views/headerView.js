@@ -17,7 +17,7 @@ const createFiltersTemplate = (currentFilter) => `
     </form>
 `;
 
-const createHeaderTemplate = (newEventCLicked, currentFilter, isLoading) =>
+const createHeaderTemplate = (isLoading, isNewEventOpened, currentFilter) =>
   `
     <header class="page-header">
       <div class="page-body__container  page-header__container">
@@ -38,7 +38,7 @@ const createHeaderTemplate = (newEventCLicked, currentFilter, isLoading) =>
             </div>
           </div>
 
-          <button ${newEventCLicked || isLoading ? 'disabled' : null} class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
+          <button ${isNewEventOpened || isLoading ? 'disabled' : null} class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
         </div>
       </div>
     </header>
@@ -50,24 +50,26 @@ export default class HeaderView extends AbstractStatefulView {
   #handleNewEventClick = null;
   #currentFilter = null;
   #isLoading = false;
+  #isNewEventOpened = false;
 
-  constructor({currentFilter, isLoading, onAllClick, onFutureClick, onNewEventClick}) {
+  constructor({currentFilter, isLoading, isNewEventOpened, onAllClick, onFutureClick, onNewEventClick}) {
     super();
 
-    this._setState({newEventClicked: false});
+    this._setState({
+      isLoading,
+      isNewEventOpened
+    });
 
     this.#handleAllClick = onAllClick;
     this.#handleFutureClick = onFutureClick;
     this.#handleNewEventClick = onNewEventClick;
     this.#currentFilter = currentFilter;
-    this.#isLoading = isLoading;
-    console.log('isLoading', this.#isLoading);
 
     this._restoreHandlers();
   }
 
   get template() {
-    return createHeaderTemplate(this._state.newEventClicked, this.#currentFilter, this.#isLoading);
+    return createHeaderTemplate(this._state.isLoading, this._state.isNewEventOpened, this.#currentFilter);
   }
 
   #allClickHandler = (event) => {
@@ -82,7 +84,7 @@ export default class HeaderView extends AbstractStatefulView {
 
   #newEventClickHandler = (event) => {
     event.preventDefault();
-    this.updateElement({newEventClicked: !this._state.newEventClicked});
+    // this.updateElement({newEventClicked: !this._state.newEventClicked});
     this.#handleNewEventClick();
   };
 

@@ -200,9 +200,9 @@ export default class EditEventView extends AbstractStatefulView {
       point,
       pointOffers,
       pointDestination,
-      isDisabled: true,
-      isSaving: true,
-      isDeleting: true
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false
     };
   }
 
@@ -317,7 +317,7 @@ export default class EditEventView extends AbstractStatefulView {
 
     this.updateElement({
       ...this._state,
-      point: {...this._state.point, destination: findedDestinations.id},
+      point: {...this._state.point, destination: findedDestinations ? findedDestinations.id : -1},
       pointDestination: findedDestinations ? findedDestinations : createCustomDescription(destinationInputValue)
     });
   };

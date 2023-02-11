@@ -13,14 +13,16 @@ export default class RoutePresenter extends Observable {
   #onNewEventClick = null;
   #onModelChange = null;
   #isLoading = false;
+  #isNewEventOpened = false;
 
-  constructor({filterModel, onAllClick, onFutureClick, onNewEventClick, bodyContainer, isLoading}) {
+  constructor({filterModel, onAllClick, onFutureClick, onNewEventClick, bodyContainer, isLoading, isNewEventOpened}) {
     super();
 
     this.#onAllClick = onAllClick;
     this.#onFutureClick = onFutureClick;
     this.#onNewEventClick = onNewEventClick;
     this.#isLoading = isLoading;
+    this.#isNewEventOpened = isNewEventOpened;
 
     this.#bodyContainer = bodyContainer;
 
@@ -31,6 +33,7 @@ export default class RoutePresenter extends Observable {
     this.#headerView = new HeaderView({
       currentFilter: this.#filterModel.filter,
       isLoading: this.#isLoading,
+      isNewEventOpened: this.#isNewEventOpened,
       onAllClick: () => {
         this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
       },
@@ -52,15 +55,7 @@ export default class RoutePresenter extends Observable {
     }
   }
 
-  #handleAllFilterClick = () => {
-    this.#filterModel.setFilter(UpdateType.MINOR, FilterType.EVERYTHING);
-  };
-
-  #handleFutureFilterClick = () => {
-    this.#filterModel.setFilter(UpdateType.MINOR, FilterType.FUTURE);
-  };
-
-  // #handleModelEvent = (updateType, data) => {
-  //   this.#onModelChange(updateType, data);
-  // };
+  setIsNewEventOpening(value) {
+    this.#headerView.updateElement({isNewEventOpened: value});
+  }
 }

@@ -16,14 +16,16 @@ export default class NewPointPresenter {
   #onClose = null;
   #onSubmit = null;
 
-  constructor({point, offersByType, offers, destinations, pointsView, onClose, onSubmit}) {
+  isSuccess = true;
+
+  constructor({point, offersByType, offers, destinations, pointsView, onDataChange, onClose}) {
     this.#point = point;
     this.#offers = offers;
     this.offersByType = offersByType;
     this.#destinations = destinations;
     this.#pointsView = pointsView;
+    this.#onDataChange = onDataChange;
     this.#onClose = onClose;
-    this.#onSubmit = onSubmit;
   }
 
   get point() {
@@ -39,16 +41,44 @@ export default class NewPointPresenter {
       point: this.#point,
       offersByType: this.offersByType,
       allDestinations: this.#destinations,
-      isNewEvent: false,
+      isNewEvent: true,
       onCloseClick: () => this.#closeHandler(),
-      onSubmitClick: (point) => {
-        this.#handleFormSubmit(point);
-        this.#closeEditMode.call(this);
+      onSubmitClick: async (point) => {
+        // if(point.destination === -1) {
+        //   console.log()
+        // }
+        await this.#handleFormSubmit(point);
+        console.log('isSuccess', this.isSuccess);
+        if(this.isSuccess) {
+          this.#closeEditMode.call(this);
+        }
       },
     });
 
     document.addEventListener('keydown', this.#escapeHander);
     render(this.#pointEditComponent, this.#pointsView.element, RenderPosition.AFTERBEGIN);
+  }
+
+  setSaving() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    this.#pointEditComponent.shake(() => {
+      this.resetFormState();
+      this.isSuccess = true;
+    });
+  }
+
+  resetFormState() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false
+    });
   }
 
   #closeHandler = () => {
@@ -90,8 +120,8 @@ export default class NewPointPresenter {
     this.#onDataChange({...this.#point, offers: newOffers});
   };
 
-  #handleFormSubmit = (point) => {
-    this.#onSubmit(
+  #handleFormSubmit = async (point) => {
+    await this.#onDataChange(
       UserAction.ADD_TASK,
       UpdateType.MINOR,
       point,

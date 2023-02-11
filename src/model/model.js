@@ -61,6 +61,8 @@ export default class PointsModel extends Observable {
   }
 
   async updatePoint(updateType, updated) {
+    // console.log('asdasdasd');
+    // throw new Error('Can\'t update unexisting point');
     const index = this.#points.findIndex((p) => p.id === updated.id);
 
     if (index === -1) {
@@ -83,6 +85,7 @@ export default class PointsModel extends Observable {
 
   async addPoint(updateType, update) {
     try {
+      console.log('add point', update);
       const response = await this.#pointsApiService.addPoint(update);
       const newPoint = this.#adaptToClient(response);
       this.#points = [newPoint, ...this.#points];

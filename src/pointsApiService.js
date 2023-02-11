@@ -37,6 +37,7 @@ export default class PointsApiService extends ApiService {
   }
 
   async addPoint(point) {
+    console.log(this.#adaptToServer(point));
     const response = await this._load({
       url: 'points',
       method: Method.POST,
