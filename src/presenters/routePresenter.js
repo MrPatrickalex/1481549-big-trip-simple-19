@@ -12,6 +12,12 @@ import Observable from '../framework/observable.js';
 import { BLANK_POINT, FilterType, SortType } from '../const.js';
 import {UserAction, UpdateType} from '../const.js';
 import LoadingView from '../views/loadingView.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class RoutePresenter extends Observable {
   #sortView = null;
@@ -31,6 +37,11 @@ export default class RoutePresenter extends Observable {
 
   #currentSortType = SortType.DEFAULT;
   #isLoading = true;
+
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT
+  });
 
   constructor({bodyContainer, pointsModel, filterModel}) {
     super();
@@ -175,6 +186,9 @@ export default class RoutePresenter extends Observable {
         onDataChange: this.#handleViewAction,
         onClose: () => {
           this.#filterPresenter.setIsNewEventOpening(false);
+        },
+        onSubmit: () => {
+          this.#filterPresenter.setIsNewEventOpening(false);
         }
       });
     }
@@ -220,8 +234,7 @@ export default class RoutePresenter extends Observable {
   }
 
   #handleViewAction = async (actionType, updateType, update) => {
-    //console.log('ViewAction', actionType, updateType, update);
-
+    this.#uiBlocker.block();
     switch(actionType) {
       case UserAction.UPDATE_TASK:
         this.#pointPresentersMap.get(update.id).setSaving();
@@ -254,6 +267,7 @@ export default class RoutePresenter extends Observable {
         //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
     }
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {

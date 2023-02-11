@@ -18,7 +18,7 @@ export default class NewPointPresenter {
 
   isSuccess = true;
 
-  constructor({point, offersByType, offers, destinations, pointsView, onDataChange, onClose}) {
+  constructor({point, offersByType, offers, destinations, pointsView, onDataChange, onClose, onSubmit}) {
     this.#point = point;
     this.#offers = offers;
     this.offersByType = offersByType;
@@ -26,6 +26,7 @@ export default class NewPointPresenter {
     this.#pointsView = pointsView;
     this.#onDataChange = onDataChange;
     this.#onClose = onClose;
+    this.#onSubmit = onSubmit;
   }
 
   get point() {
@@ -44,13 +45,10 @@ export default class NewPointPresenter {
       isNewEvent: true,
       onCloseClick: () => this.#closeHandler(),
       onSubmitClick: async (point) => {
-        // if(point.destination === -1) {
-        //   console.log()
-        // }
         await this.#handleFormSubmit(point);
-        console.log('isSuccess', this.isSuccess);
         if(this.isSuccess) {
           this.#closeEditMode.call(this);
+          this.#onSubmit();
         }
       },
     });
@@ -84,11 +82,6 @@ export default class NewPointPresenter {
   #closeHandler = () => {
     this.#closeEditMode.call(this);
     this.#onClose();
-  };
-
-  #submitHandler = () => {
-    this.#onSubmit();
-    this.#closeEditMode.call(this);
   };
 
   destroy() {
