@@ -55,10 +55,12 @@ export default class RoutePresenter extends Observable {
         break;
     }
 
+    console.log(this.#currentSortType);
+
     switch(this.#currentSortType) {
       case SortType.DAY:
         return [...filtered.sort((p1, p2) => {
-          if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
+          if(dayjs(p1.dateFrom).isBefore(dayjs(p2.dateFrom))) {
             return -1;
           } else {
             return 1;
@@ -68,8 +70,8 @@ export default class RoutePresenter extends Observable {
         return [...filtered];
       case SortType.TIME:
         return [...filtered.sort((p1, p2) => {
-          const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
-          const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
+          const timeFirst = dayjs(p1.dateFrom).hour() * 60 + dayjs(p1.dateFrom).minute();
+          const timeSecond = dayjs(p2.dateFrom).hour() * 60 + dayjs(p2.dateFrom).minute();
 
           if(timeFirst < timeSecond) {
             return -1;
@@ -79,7 +81,7 @@ export default class RoutePresenter extends Observable {
         })];
       case SortType.PRICE:
         return [...filtered.sort((p1, p2) => {
-          if(p1.base_price < p2.base_price) {
+          if(p1.basePrice < p2.basePrice) {
             return -1;
           } else {
             return 1;
@@ -189,8 +191,10 @@ export default class RoutePresenter extends Observable {
       return;
     }
 
-    if(this.points.length > 0) {
-      this.points.forEach((p) => this.createPoint(p));
+    const points = this.points;
+
+    if(points.length > 0) {
+      points.forEach((p) => this.createPoint(p));
     } else {
       render(this.#emptyView, contentContainer);
     }
