@@ -37,15 +37,14 @@ export default class NewPointPresenter {
   renderPoint() {
     this.#pointEditComponent = new EditEventView({
       point: this.#point,
-      allOffers: this.#offers,
-      allDestinations: this.#destinations,
       offersByType: this.offersByType,
+      allDestinations: this.#destinations,
+      isNewEvent: false,
       onCloseClick: () => this.#closeHandler(),
       onSubmitClick: (point) => {
         this.#handleFormSubmit(point);
         this.#closeEditMode.call(this);
       },
-      isNewEvent: true
     });
 
     document.addEventListener('keydown', this.#escapeHander);

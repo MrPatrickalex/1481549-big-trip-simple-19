@@ -16,13 +16,13 @@ export const SortType = {
 };
 
 export const BLANK_POINT = {
-  'base_price': 0,
-  'date_from': new Date(),
-  'date_to': new Date(),
-  'destination': -1,
-  'id': nanoid(),
-  'offers': [],
-  'type': EVENT_TYPES[0]
+  basePrice: 0,
+  dateFrom: new Date(),
+  dateTo: new Date(),
+  destination: -1,
+  id: nanoid(),
+  offers: [],
+  type: EVENT_TYPES[0]
 };
 
 export const UserAction = {
@@ -35,4 +35,5 @@ export const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };

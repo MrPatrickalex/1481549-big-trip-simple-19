@@ -11,6 +11,7 @@ import FilterPresenter from './filterPresenter.js';
 import Observable from '../framework/observable.js';
 import { BLANK_POINT, FilterType, SortType } from '../const.js';
 import {UserAction, UpdateType} from '../const.js';
+import LoadingView from '../views/loadingView.js';
 
 export default class RoutePresenter extends Observable {
   #headerView = null;
@@ -18,15 +19,11 @@ export default class RoutePresenter extends Observable {
   #contentView = new ContentView();
   #pointsView = new PointsView();
   #emptyView = new EmptyListView();
+  #loadingComponent = new LoadingView();
 
   #bodyContainer = null;
   #pointsModel = null;
   #filterModel = null;
-
-  #offers = null;
-  #destinations = null;
-  #sortings = null;
-  #offersByType = null;
 
   #isNewEventOpened = false;
   #filterPresenter = null;
@@ -34,15 +31,13 @@ export default class RoutePresenter extends Observable {
   #pointPresentersMap = new Map();
 
   #currentSortType = SortType.DEFAULT;
+  #isLoading = true;
 
   constructor({bodyContainer, pointsModel, filterModel}) {
     super();
     this.#bodyContainer = bodyContainer;
     this.#pointsModel = pointsModel;
     this.#filterModel = filterModel;
-    this.#offers = this.#pointsModel.offers;
-    this.#offersByType = this.#pointsModel.offersByType;
-    this.#destinations = this.#pointsModel.destinations;
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -105,6 +100,13 @@ export default class RoutePresenter extends Observable {
     this.#renderPointsList();
   }
 
+  #renderLoading() {
+    const contentElement = this.#contentView.element;
+    const contentContainer = contentElement.querySelector('.trip-events');
+
+    render(this.#loadingComponent, contentContainer);
+  }
+
   #resetFiter() {
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
   }
@@ -125,7 +127,8 @@ export default class RoutePresenter extends Observable {
             this.#isNewEventOpened = true;
           }
         },
-        bodyContainer: this.#bodyContainer
+        bodyContainer: this.#bodyContainer,
+        isLoading: this.#isLoading
       });
     }
     this.#filterPresenter.reset();
@@ -163,9 +166,9 @@ export default class RoutePresenter extends Observable {
     if(this.#newEventPresenter === null) {
       this.#newEventPresenter = new NewPointPresenter({
         point: BLANK_POINT,
-        offersByType: this.#offersByType,
-        offers: this.#offers,
-        destinations: this.#destinations,
+        offersByType: this.#pointsModel.offersByType,
+        offers: this.#pointsModel.offers,
+        destinations: this.#pointsModel.destinations,
         pointsView: this.#pointsView,
         onClose: () => {
           this.#isNewEventOpened = false;
@@ -188,7 +191,10 @@ export default class RoutePresenter extends Observable {
     const contentElement = this.#contentView.element;
     const contentContainer = contentElement.querySelector('.trip-events');
 
-    // const filtered = this.points
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
 
     if(this.points.length > 0) {
       this.points.forEach((p) => this.createPoint(p));
@@ -200,9 +206,8 @@ export default class RoutePresenter extends Observable {
   createPoint(point) {
     const pointPresenter = new PointPresenter({
       point,
-      allOffers: this.#offers,
-      offersByType: this.#offersByType,
-      destinations: this.#destinations,
+      offersByType: this.#pointsModel.offersByType,
+      destinations: this.#pointsModel.destinations,
       pointsView: this.#pointsView,
       onDataChange: this.#handleViewAction,
       onModeChange: () => this.#handleModeChange()
@@ -235,13 +240,12 @@ export default class RoutePresenter extends Observable {
 
   #handleModelEvent = (updateType, data) => {
     //console.log('ModelAction', updateType, data);
-    const pointPresenter = this.#pointPresentersMap.get(data.id);
 
     switch (updateType) {
       case UpdateType.PATCH:
         // - обновить часть списка (например, когда поменялось описание)
-        pointPresenter.point = data;
-        pointPresenter.renderPoint();
+        this.#pointPresentersMap.get(data.id).point = data;
+        this.#pointPresentersMap.get(data.id).renderPoint();
         break;
       case UpdateType.MINOR:
         this.#clearPointsList();
@@ -250,6 +254,13 @@ export default class RoutePresenter extends Observable {
         break;
       case UpdateType.MAJOR:
         // - обновить всю доску (например, при переключении фильтра)
+        this.#renderHeader();
+        this.#clearPointsList();
+        this.#renderPointsList();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
         this.#renderHeader();
         this.#clearPointsList();
         this.#renderPointsList();

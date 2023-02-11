@@ -12,13 +12,15 @@ export default class RoutePresenter extends Observable {
   #onFutureClick = null;
   #onNewEventClick = null;
   #onModelChange = null;
+  #isLoading = false;
 
-  constructor({filterModel, onAllClick, onFutureClick, onNewEventClick, bodyContainer}) {
+  constructor({filterModel, onAllClick, onFutureClick, onNewEventClick, bodyContainer, isLoading}) {
     super();
 
     this.#onAllClick = onAllClick;
     this.#onFutureClick = onFutureClick;
     this.#onNewEventClick = onNewEventClick;
+    this.#isLoading = isLoading;
 
     this.#bodyContainer = bodyContainer;
 
@@ -28,6 +30,7 @@ export default class RoutePresenter extends Observable {
   init() {
     this.#headerView = new HeaderView({
       currentFilter: this.#filterModel.filter,
+      isLoading: this.#isLoading,
       onAllClick: () => {
         this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
       },
@@ -36,7 +39,7 @@ export default class RoutePresenter extends Observable {
       },
       onNewEventClick: () => {
         this.#onNewEventClick();
-      }
+      },
     });
 
     render(this.#headerView, this.#bodyContainer, RenderPosition.AFTERBEGIN);
@@ -44,6 +47,7 @@ export default class RoutePresenter extends Observable {
 
   reset() {
     if(this.#headerView) {
+      this.#isLoading = false;
       remove(this.#headerView);
     }
   }

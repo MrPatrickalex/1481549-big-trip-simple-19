@@ -12,7 +12,6 @@ const Mode = {
 export default class PointPresenter {
   #pointsView = null;
   #point = null;
-  #allOffers = null;
   #offersByType = null;
   #destinations = null;
 
@@ -24,9 +23,8 @@ export default class PointPresenter {
   #mode = Mode.DEFAULT;
   #onModeChange = null;
 
-  constructor({point, allOffers, offersByType, destinations, pointsView, onDataChange, onModeChange}) {
+  constructor({point, offersByType, destinations, pointsView, onDataChange, onModeChange}) {
     this.#point = point;
-    this.#allOffers = allOffers;
     this.#offersByType = offersByType;
     this.#destinations = destinations;
     this.#pointsView = pointsView;
@@ -48,15 +46,15 @@ export default class PointPresenter {
 
     this.#pointComponent = new EventView({
       point: this.#point,
-      allOffers: this.#allOffers,
+      offersByType: this.#offersByType,
       allDestinations: this.#destinations,
       onEditClick: () => this.#showEditMode.call(this)
     });
     this.#pointEditComponent = new EditEventView({
       point: this.#point,
-      allOffers: this.#allOffers,
-      allDestinations: this.#destinations,
       offersByType: this.#offersByType,
+      allDestinations: this.#destinations,
+      isNewEvent: false,
       onCloseClick: () => {
         // this.resetView();
         this.#closeEditMode.call(this);
@@ -70,8 +68,7 @@ export default class PointPresenter {
         // console.log(point);
         this.#handlePointDelete(point);
         this.#closeEditMode.call(this);
-      },
-      isNewEvent: false
+      }
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {

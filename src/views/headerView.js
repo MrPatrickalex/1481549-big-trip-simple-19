@@ -17,7 +17,7 @@ const createFiltersTemplate = (currentFilter) => `
     </form>
 `;
 
-const createHeaderTemplate = (newEventCLicked, currentFilter) =>
+const createHeaderTemplate = (newEventCLicked, currentFilter, isLoading) =>
   `
     <header class="page-header">
       <div class="page-body__container  page-header__container">
@@ -38,7 +38,7 @@ const createHeaderTemplate = (newEventCLicked, currentFilter) =>
             </div>
           </div>
 
-          <button ${newEventCLicked ? 'disabled' : null} class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
+          <button ${newEventCLicked || isLoading ? 'disabled' : null} class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
         </div>
       </div>
     </header>
@@ -49,8 +49,9 @@ export default class HeaderView extends AbstractStatefulView {
   #handleFutureClick = null;
   #handleNewEventClick = null;
   #currentFilter = null;
+  #isLoading = false;
 
-  constructor({currentFilter, onAllClick, onFutureClick, onNewEventClick}) {
+  constructor({currentFilter, isLoading, onAllClick, onFutureClick, onNewEventClick}) {
     super();
 
     this._setState({newEventClicked: false});
@@ -59,14 +60,14 @@ export default class HeaderView extends AbstractStatefulView {
     this.#handleFutureClick = onFutureClick;
     this.#handleNewEventClick = onNewEventClick;
     this.#currentFilter = currentFilter;
-
-    console.log(currentFilter);
+    this.#isLoading = isLoading;
+    console.log('isLoading', this.#isLoading);
 
     this._restoreHandlers();
   }
 
   get template() {
-    return createHeaderTemplate(this._state.newEventClicked, this.#currentFilter);
+    return createHeaderTemplate(this._state.newEventClicked, this.#currentFilter, this.#isLoading);
   }
 
   #allClickHandler = (event) => {
