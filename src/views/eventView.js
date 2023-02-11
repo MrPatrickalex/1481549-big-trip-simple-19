@@ -62,10 +62,9 @@ export default class EventView extends AbstractView {
     super();
 
 
-    const [offersForPoint] = offersByType.filter(o => o.type === point.type);
+    const [offersForPoint] = offersByType.filter((o) => o.type === point.type);
     const pointOffers = offersForPoint.offers.filter((o) => point.offers.some((o2) => o2 === o.id));
     const [pointDestination] = allDestinations.filter((d) => d.id === point.destination);
-    // console.log('pointView', offersForPoint);
 
     this.#point = point;
     this.#handleEditClick = onEditClick;
