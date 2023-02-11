@@ -1,5 +1,5 @@
 import Observable from '../framework/observable.js';
-import { getPoints, getOffers, getDestinations, getSortings, getOffersByType } from '../mock/points.js';
+import { getPoints } from '../mock/points.js';
 import {UpdateType} from '../const.js';
 
 export default class PointsModel extends Observable {
@@ -22,13 +22,6 @@ export default class PointsModel extends Observable {
       this.#points = points.map(this.#adaptToClient);
       this.#offersByType = offersByType;
       this.#destinations = destinations;
-
-      console.log(this.#points);
-      console.log(this.#offersByType);
-      console.log(this.#destinations);
-
-      console.log(this.#offersByType.reduce((acc, ot) => [...acc, ...ot.offers], []));
-
     } catch(err) {
       this.#points = [];
       this.#offersByType = [];
@@ -85,7 +78,6 @@ export default class PointsModel extends Observable {
 
   async addPoint(updateType, update) {
     try {
-      console.log('add point', update);
       const response = await this.#pointsApiService.addPoint(update);
       const newPoint = this.#adaptToClient(response);
       this.#points = [newPoint, ...this.#points];

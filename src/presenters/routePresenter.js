@@ -66,8 +66,6 @@ export default class RoutePresenter extends Observable {
         break;
     }
 
-    console.log(this.#currentSortType);
-
     switch(this.#currentSortType) {
       case SortType.DAY:
         return [...filtered.sort((p1, p2) => {
