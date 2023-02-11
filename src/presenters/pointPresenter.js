@@ -23,6 +23,8 @@ export default class PointPresenter {
   #mode = Mode.DEFAULT;
   #onModeChange = null;
 
+  isSuccess = true;
+
   constructor({point, offersByType, destinations, pointsView, onDataChange, onModeChange}) {
     this.#point = point;
     this.#offersByType = offersByType;
@@ -56,18 +58,19 @@ export default class PointPresenter {
       allDestinations: this.#destinations,
       isNewEvent: false,
       onCloseClick: () => {
-        // this.resetView();
         this.#closeEditMode.call(this);
       },
-      onSubmitClick: (point) => {
-        // console.log(point);
-        this.#handleFormSubmit(point);
-        this.#closeEditMode.call(this);
+      onSubmitClick: async (point) => {
+        await this.#handleFormSubmit(point);
+        if(this.isSuccess) {
+          this.#closeEditMode.call(this);
+        }
       },
-      onDeleteClick: (point) => {
-        // console.log(point);
-        this.#handlePointDelete(point);
-        this.#closeEditMode.call(this);
+      onDeleteClick: async (point) => {
+        await this.#handlePointDelete(point);
+        if(this.isSuccess) {
+          this.#closeEditMode.call(this);
+        }
       }
     });
 
@@ -91,6 +94,35 @@ export default class PointPresenter {
   destroy() {
     remove(this.#pointComponent);
     remove(this.#pointEditComponent);
+  }
+
+  setSaving() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setDeleting() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: true,
+      isDeleting: true,
+    });
+  }
+
+  setAborting() {
+    this.#pointEditComponent.shake(() => {
+      this.resetFormState();
+      this.isSuccess = true;
+    });
+  }
+
+  resetFormState() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false
+    });
   }
 
   #escapeHander = (event) => {
@@ -132,16 +164,16 @@ export default class PointPresenter {
     }
   }
 
-  #handleFormSubmit = (point) => {
-    this.#onDataChange(
+  #handleFormSubmit = async (point) => {
+    await this.#onDataChange(
       UserAction.UPDATE_TASK,
       UpdateType.PATCH,
       point,
     );
   };
 
-  #handlePointDelete = (point) => {
-    this.#onDataChange(
+  #handlePointDelete = async (point) => {
+    await this.#onDataChange(
       UserAction.DELETE_TASK,
       UpdateType.MINOR,
       point,

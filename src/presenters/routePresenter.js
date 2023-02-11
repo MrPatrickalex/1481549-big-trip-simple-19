@@ -12,9 +12,14 @@ import Observable from '../framework/observable.js';
 import { BLANK_POINT, FilterType, SortType } from '../const.js';
 import {UserAction, UpdateType} from '../const.js';
 import LoadingView from '../views/loadingView.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class RoutePresenter extends Observable {
-  #headerView = null;
   #sortView = null;
   #contentView = new ContentView();
   #pointsView = new PointsView();
@@ -32,6 +37,11 @@ export default class RoutePresenter extends Observable {
 
   #currentSortType = SortType.DEFAULT;
   #isLoading = true;
+
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT
+  });
 
   constructor({bodyContainer, pointsModel, filterModel}) {
     super();
@@ -56,10 +66,12 @@ export default class RoutePresenter extends Observable {
         break;
     }
 
+    console.log(this.#currentSortType);
+
     switch(this.#currentSortType) {
       case SortType.DAY:
         return [...filtered.sort((p1, p2) => {
-          if(dayjs(p1.date_from).isBefore(dayjs(p2.date_from))) {
+          if(dayjs(p1.dateFrom).isBefore(dayjs(p2.dateFrom))) {
             return -1;
           } else {
             return 1;
@@ -69,8 +81,8 @@ export default class RoutePresenter extends Observable {
         return [...filtered];
       case SortType.TIME:
         return [...filtered.sort((p1, p2) => {
-          const timeFirst = dayjs(p1.date_from).hour() * 60 + dayjs(p1.date_from).minute();
-          const timeSecond = dayjs(p2.date_from).hour() * 60 + dayjs(p2.date_from).minute();
+          const timeFirst = dayjs(p1.dateFrom).hour() * 60 + dayjs(p1.dateFrom).minute();
+          const timeSecond = dayjs(p2.dateFrom).hour() * 60 + dayjs(p2.dateFrom).minute();
 
           if(timeFirst < timeSecond) {
             return -1;
@@ -80,7 +92,7 @@ export default class RoutePresenter extends Observable {
         })];
       case SortType.PRICE:
         return [...filtered.sort((p1, p2) => {
-          if(p1.base_price < p2.base_price) {
+          if(p1.basePrice < p2.basePrice) {
             return -1;
           } else {
             return 1;
@@ -124,11 +136,12 @@ export default class RoutePresenter extends Observable {
             this.#resetFiter();
             this.#resetSort();
             this.#renderNewEvent();
-            this.#isNewEventOpened = true;
+            this.#filterPresenter.setIsNewEventOpening(true);
           }
         },
         bodyContainer: this.#bodyContainer,
-        isLoading: this.#isLoading
+        isLoading: this.#isLoading,
+        isNewEventOpened: this.#isNewEventOpened
       });
     }
     this.#filterPresenter.reset();
@@ -170,16 +183,12 @@ export default class RoutePresenter extends Observable {
         offers: this.#pointsModel.offers,
         destinations: this.#pointsModel.destinations,
         pointsView: this.#pointsView,
+        onDataChange: this.#handleViewAction,
         onClose: () => {
-          this.#isNewEventOpened = false;
-          remove(this.#headerView);
-          this.#renderHeader();
+          this.#filterPresenter.setIsNewEventOpening(false);
         },
-        onSubmit: (actionType, updateType, update) => {
-          this.#isNewEventOpened = false;
-          remove(this.#headerView);
-          this.#renderHeader();
-          this.#handleViewAction(actionType, updateType, update);
+        onSubmit: () => {
+          this.#filterPresenter.setIsNewEventOpening(false);
         }
       });
     }
@@ -196,8 +205,10 @@ export default class RoutePresenter extends Observable {
       return;
     }
 
-    if(this.points.length > 0) {
-      this.points.forEach((p) => this.createPoint(p));
+    const points = this.points;
+
+    if(points.length > 0) {
+      points.forEach((p) => this.createPoint(p));
     } else {
       render(this.#emptyView, contentContainer);
     }
@@ -222,20 +233,41 @@ export default class RoutePresenter extends Observable {
     this.#pointPresentersMap.clear();
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
-    //console.log('ViewAction', actionType, updateType, update);
-
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
     switch(actionType) {
       case UserAction.UPDATE_TASK:
-        this.#pointsModel.updatePoint(updateType, update);
+        this.#pointPresentersMap.get(update.id).setSaving();
+        try {
+          await this.#pointsModel.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresentersMap.get(update.id).isSuccess = false;
+          this.#pointPresentersMap.get(update.id).setAborting();
+        }
+        //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
       case UserAction.ADD_TASK:
-        this.#pointsModel.addPoint(updateType, update);
+        this.#newEventPresenter.setSaving();
+        try {
+          await this.#pointsModel.addPoint(updateType, update);
+        } catch(err) {
+          this.#newEventPresenter.isSuccess = false;
+          this.#newEventPresenter.setAborting();
+        }
+        //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
       case UserAction.DELETE_TASK:
-        this.#pointsModel.removePoint(updateType, update);
+        this.#pointPresentersMap.get(update.id).setDeleting();
+        try {
+          await this.#pointsModel.removePoint(updateType, update);
+        } catch (error) {
+          this.#pointPresentersMap.get(update.id).isSuccess = false;
+          this.#pointPresentersMap.get(update.id).setAborting();
+        }
+        //this.#pointPresentersMap.get(update.id).resetFormState();
         break;
     }
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
